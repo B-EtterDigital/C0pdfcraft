@@ -179,6 +179,7 @@ pub fn attach(ctx: &egui::Context) -> (Control, ControlClient) {
 
 /// What a request needs from the app (implemented by `PdfCraftApp`).
 pub(crate) trait Host {
+    fn c0(&mut self, ctx: &egui::Context, method: &str, params: &Value) -> Reply;
     fn state(&self) -> Value;
     fn command(&mut self, id: &str) -> Reply;
     fn dock(&mut self, reset: bool, params: &Value) -> Reply;
@@ -276,6 +277,7 @@ impl Control {
     fn handle(&mut self, ctx: &egui::Context, host: &mut impl Host, method: &str, p: &Value) -> Handled {
         let str_param = |k: &str| p.get(k).and_then(Value::as_str).ok_or_else(|| format!("{method}: missing string parameter {k}"));
         let r: Result<Handled, String> = (|| match method {
+            method if method.starts_with("c0.") => Ok(Handled::Now(host.c0(ctx, method, p))),
             "ui.state" => {
                 let mut state = host.state();
                 let size = ctx.input(|i| i.viewport_rect().size());
@@ -644,6 +646,9 @@ fn screenshot_png(image: &egui::ColorImage, region: Option<egui::Rect>, ppp: f32
 }
 
 impl Host for crate::PdfCraftApp {
+    fn c0(&mut self, ctx: &egui::Context, method: &str, params: &Value) -> Reply {
+        crate::c0_host::handle(self, ctx, method, params)
+    }
     fn dock(&mut self, reset: bool, params: &Value) -> Reply {
         crate::docking::command(self, reset, params)
     }

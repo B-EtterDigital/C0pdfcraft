@@ -1048,7 +1048,7 @@ pub(crate) fn download(name: &str, bytes: &[u8]) -> Result<(), String> {
     let array = js_sys::Uint8Array::from(bytes);
     let parts = js_sys::Array::of1(&array);
     let opts = web_sys::BlobPropertyBag::new();
-    opts.set_type("application/pdf");
+    opts.set_type(crate::c0_web::mime(name));
     let blob = web_sys::Blob::new_with_u8_array_sequence_and_options(&parts, &opts).map_err(err)?;
     let url = web_sys::Url::create_object_url_with_blob(&blob).map_err(err)?;
     let document = web_sys::window().and_then(|w| w.document()).ok_or("no document")?;

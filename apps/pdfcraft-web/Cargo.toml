@@ -9,10 +9,14 @@ publish = false
 [lints]
 workspace = true
 
+[features]
+page-control = ["eframe/x11", "eframe/wayland"]
+
 [dependencies]
 pdfcraft-ui-egui = { workspace = true }
 eframe = { workspace = true, features = ["default_fonts", "glow", "persistence", "accesskit"] }
 egui = { workspace = true }
+serde_json = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"

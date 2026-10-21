@@ -2,6 +2,7 @@
 //! one blue accent; Dark Gray keeps pages white). Every custom widget reads `Tokens::get`.
 
 use std::sync::Arc;
+pub mod host;
 
 use egui::epaint::text::{FontTweak, HintingTarget, SmoothHinting};
 use egui::{Color32, CornerRadius, FontData, FontDefinitions, FontFamily, FontId, Rect, Response, Stroke, Vec2, Visuals};
@@ -425,7 +426,7 @@ pub fn apply(ctx: &egui::Context, kind: ThemeKind) {
     // NSWindow appearance and prevents winit from delivering ThemeChanged.
     // Our saved choice owns the palette; both egui branches receive it below.
     ctx.set_theme(egui::ThemePreference::System);
-    let t = Tokens::for_kind(kind);
+    let t = host::resolve(ctx, Tokens::for_kind(kind));
     ctx.data_mut(|d| d.insert_temp(egui::Id::new("pdfcraft-theme"), t));
     let mut v = if t.dark() { Visuals::dark() } else { Visuals::light() };
     v.panel_fill = t.panel;

@@ -3,6 +3,9 @@
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
+#[cfg(feature = "page-control")]
+mod page_control;
+
 #[cfg(target_arch = "wasm32")]
 fn main() {
     use eframe::wasm_bindgen::JsCast;
@@ -17,7 +20,10 @@ fn main() {
         else {
             return;
         };
-        let started = eframe::WebRunner::new()
+        let runner = eframe::WebRunner::new();
+        #[cfg(feature = "page-control")]
+        page_control::runner(&runner);
+        let started = runner
             .start(
                 canvas,
                 options,
@@ -75,6 +81,8 @@ fn main() {
                             &"PdfCraft: ?host=parent needs a framing page on the same origin; saves download instead".into(),
                         );
                     }
+                    #[cfg(feature = "page-control")]
+                    page_control::attach(&mut app, &cc.egui_ctx);
                     Ok(Box::new(app))
                 }),
             )

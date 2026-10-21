@@ -31,6 +31,8 @@ macro_rules! tl_ctx {
 mod a11y_ui;
 mod actions_ui;
 mod appearance;
+pub mod c0_host;
+mod c0_web;
 pub mod canvas;
 mod chrome;
 mod combine_grid;
@@ -484,6 +486,7 @@ pub struct RecentFile {
 }
 
 pub struct PdfCraftApp {
+    pub chrome: c0_host::Chrome,
     pub docking: docking::Workspace,
     pub(crate) pending_panel_reveals: Vec<docking::Panel>,
     pub session: Session,
@@ -890,7 +893,8 @@ fn rgb_triple(v: &serde_json::Value) -> Option<[f64; 3]> {
 impl PdfCraftApp {
     pub fn new() -> Self {
         Self {
-            session: Session::new(),
+            session: c0_web::session(),
+            chrome: Default::default(),
             views: Vec::new(),
             closed_tabs: Vec::new(),
             active: None,
@@ -1860,6 +1864,9 @@ impl PdfCraftApp {
     }
 
     pub fn open_dialog(&mut self) {
+        if c0_host::files::page_picker(self) {
+            return;
+        }
         self.startup_superseded = true;
         #[cfg(not(target_arch = "wasm32"))]
         self.pick(
@@ -3070,6 +3077,7 @@ impl eframe::App for PdfCraftApp {
             control.tick(ctx, self);
             self.control = Some(control);
         }
+        c0_host::files::poll(self, ctx);
         self.guard_quit(ctx);
         // macOS: quit through `terminate:` instead of dropping the window (Touch Bar crash, #1136).
         craft_quit::on_close_request(ctx);
@@ -3163,10 +3171,16 @@ impl eframe::App for PdfCraftApp {
         if self.draws_window_frame() {
             window_controls::resize_edges(&ctx);
         }
-        chrome::tab_strip(self, ui);
-        chrome::mode_bar(self, ui);
+        if self.chrome.title_bar && self.chrome.tab_strip {
+            chrome::tab_strip(self, ui);
+        }
+        if self.chrome.app_bar {
+            chrome::mode_bar(self, ui);
+        }
         if self.active.is_some() {
-            chrome::right_rail(self, ui);
+            if self.chrome.right_rail {
+                chrome::right_rail(self, ui);
+            }
             // Read mode hides the tools, not the navigation panes: the rail stays visible
             // there, so its buttons (Bookmarks, Page thumbnails, ...) must open their panels.
             // Outside Read mode the docking workspace draws the inspector.

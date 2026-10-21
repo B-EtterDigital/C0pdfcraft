@@ -335,6 +335,9 @@ pub fn command(app: &mut crate::PdfCraftApp, reset: bool, params: &Value) -> Res
 // Split paths change when a temporarily unavailable pane is pruned. Translate renderer
 // paths back to the saved tree before applying geometry changes.
 fn saved_split_path(saved: &Layout<Panel>, rendered: &Layout<Panel>, path: &[bool]) -> Option<Vec<bool>> {
+    if !rendered.contains(&Panel::Tools) {
+        return crate::c0_host::split_path(saved, rendered, path);
+    }
     let mut target = rendered.root.as_ref()?;
     for second in path {
         let Node::Split { first, second: other, .. } = target else { return None };
@@ -392,6 +395,7 @@ pub fn show(app: &mut crate::PdfCraftApp, ui: &mut egui::Ui) {
     style.font = crate::theme::medium(12.0);
     drain_reveals(&mut workspace, app);
     let mut rendered = workspace.layout.clone();
+    crate::c0_host::project_panels(app, &mut rendered);
     if app.active.is_none() && rendered.contains(&Panel::Inspector) {
         // Availability is a render projection: the saved group, selection and width survive Home.
         let _ = rendered.apply(Action::Close { panel: Panel::Inspector });
@@ -427,7 +431,7 @@ pub fn show(app: &mut crate::PdfCraftApp, ui: &mut egui::Ui) {
     publish_visibility(app, &workspace);
     app.docking = workspace;
     for mut action in output.actions {
-        if app.active.is_none()
+        if (app.active.is_none() || !app.chrome.tools_panel)
             && let Action::ResizeSplit { path, .. } = &mut action
         {
             let Some(saved_path) = saved_split_path(&app.docking.layout, &rendered, path) else { continue };

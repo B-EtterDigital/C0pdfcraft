@@ -1,0 +1,20 @@
+[package]
+name = "c0pdf-clock-probe"
+version = "0.0.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+# Test support only; never a member or dependency of the application workspace.
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "=0.2.129"
+js-sys = "=0.3.106"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
