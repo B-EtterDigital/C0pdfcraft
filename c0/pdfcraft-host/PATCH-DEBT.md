@@ -26,7 +26,7 @@ Total: 68
 
 Ratchet: 68
 
-Measured against the current working changes; the final report records the committed measurement:
+Measured on implementation commit `e4ee673190f380a0a7484efa01e66891aa914dd7`:
 
 ```sh
 git diff --numstat --diff-filter=M main c0/main -- . ':!c0'
