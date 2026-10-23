@@ -39,7 +39,7 @@ pub(super) fn inspect(app: &PdfCraftApp, ctx: &egui::Context) -> Value {
         "outline": outline(app), "annotationCount": doc.map_or(0, |d| d.info.annotations.len()),
         "formFieldCount": doc.map_or(0, |d| d.info.fields.len()), "documents": documents,
         "zoom": view.map_or(1.0, |v| v.zoom), "theme": if app.theme == crate::theme::ThemeKind::Dark {"dark"} else {"light"},
-        "panes": {"chrome": app.chrome, "tools": app.chrome.tools_panel && app.left_open,
+        "panes": {"chrome": app.chrome, "tools": app.chrome.tools_panel && app.left_open, "strip": super::strip::state(app),
             "left": if app.left_open {Some(format!("{:?}", app.left))} else {None}, "right": app.right.map(|p| format!("{p:?}"))},
         "pendingReplacement": super::files::replacement_pending(ctx), "fileDialog": super::files::picker_pending(ctx),
         "needsConfirmation": app.close_request.is_some()

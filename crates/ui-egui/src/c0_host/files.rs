@@ -138,6 +138,7 @@ fn finish(app: &mut PdfCraftApp, replacement: Replacement) -> Result<(), String>
 
 /// Runs on logic passes too. Cancel keeps the old id; Discard/Save removes it.
 pub fn poll(app: &mut PdfCraftApp, ctx: &egui::Context) {
+    super::dock::step(app);
     let Some(replacement) = ctx.data(|d| d.get_temp::<Replacement>(replacement_id())) else { return };
     if app.close_request.is_some() {
         return;

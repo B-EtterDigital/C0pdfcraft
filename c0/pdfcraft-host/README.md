@@ -75,7 +75,10 @@ and retains the upstream five-second timeout. No server or network listener is i
   "annotationCount":0, "formFieldCount":0,
   "documents":[{"name":"example.pdf","dirty":false,"active":true}],
   "panes":{"chrome":{"title_bar":false,"app_bar":true,"tab_strip":false,"start_screen":false,
-    "community_links":false,"right_rail":true,"tools_panel":true},"tools":true,"left":"AllTools","right":null},
+    "community_links":false,"right_rail":true,"tools_panel":true,"toolbar":true,"toolbar_double":false,
+    "toolbar_floating":false,"right_dock_collapsed":false,"toolbar_pos":null},
+    "strip":{"visible":true,"columns":1,"floating":false,"pos":null},
+    "tools":true,"left":"AllTools","right":null},
   "pendingReplacement":false, "fileDialog":false, "needsConfirmation":false
 }
 ```
@@ -116,7 +119,8 @@ the current Open chooser. When no such request is live it returns false.
 
 The unsaved `Chrome` struct defaults **every field to true**. The guest page turns off
 `title_bar`, `tab_strip`, `start_screen` and `community_links`; the host owns its title and Home.
-All panel values in `c0.set` are booleans. Successful keys are reported as `panels.<key>`,
+All panel values in `c0.set` are booleans; the four switches below the table default to
+upstream's behaviour (strip shown, one column, fixed in its corner, dock open). Successful keys are reported as `panels.<key>`,
 unknown keys as unknown and known non-booleans as invalid. Repeated values are idempotent.
 
 | Panel key | Effect |
@@ -128,6 +132,38 @@ unknown keys as unknown and known non-booleans as invalid. Repeated values are i
 | `community_links` | Community card, Discord chrome action, Help links, palette promotions and About marks/links; About retains PdfCraft, contributors and licence |
 | `right_rail` | Page navigation/tool rail; panes remain available through commands |
 | `tools_panel` | Hides Tools in the rendered dock projection, retaining the saved layout |
+| `toolbar` | The quick-action strip (select, hand, comment, fill and sign); default true |
+| `toolbar_double` | The strip in two columns; default false |
+| `toolbar_floating` | The strip as a palette with a grip, dragged within the document area; default false |
+| `right_dock_collapsed` | The right dock folds to the rail; default false |
+
+## Tool strip modes
+
+PdfCraft's tool strip is the quick-action bar (`canvas.rs`, `quick_bar`): a one-column strip over
+the left edge of the document area, with flyout menus for the comment, highlight, draw and
+Fill & Sign tools. The tools panel (`tools_panel`) is a catalogue of tool groups, not a strip, so
+it keeps its own switch. The three strip keys use PhotoCraft's names and are not saved:
+
+| `toolbar` | `toolbar_double` | `toolbar_floating` | Result |
+|---|---|---|---|
+| true | false | false | Upstream: one column, fixed 14 points from the document area's corner |
+| true | true | false | Two columns, fixed in the corner |
+| true | false | true | One column with a grip above it; drag the grip to move the strip, which stays inside the document area |
+| true | true | true | Two columns, movable |
+| false | any | any | No strip (Read mode never shows it, as upstream) |
+
+Switching back to fixed returns the strip to its corner and keeps the dragged place for the next
+float. `c0.inspect().panes.strip` reports `{visible, columns, floating, pos}` as drawn; `pos` is
+the strip's offset in points from its corner position, `null` until dragged. Two columns wrap
+at half the height of the buttons and options the current tool shows.
+
+## Right dock fold
+
+`right_dock_collapsed: true` drops the Inspector from the rendered dock (the saved layout, its
+group and width are untouched) and from Read mode's side panel; the rail's icons stay. Pressing a
+rail icon opens that pane and unfolds the dock, including the icon of the pane that was open.
+The change is immediate; the document area takes the width the dock had. With `right_rail`
+false nothing remains of the dock while folded.
 
 Other navigation/inspector panes and the existing `ui.set` options remain available. Signing,
 OCR and attachments remain visible with their upstream browser limitations: certificate signing
@@ -171,6 +207,7 @@ All existing methods keep their upstream request/reply semantics inside the page
 | `ui.key` | `{key,modifiers?}` |
 | `ui.dock`, `ui.dock.reset` | Existing panel layout controls |
 | `ui.screenshot` | `{region?}`; base64 PNG, requires presentation |
+| `ui.render` | `{page?,scale?}`; frameless: `{page,pageCount,scale,width,height,png_base64}`, the page alone from the engine's renderer. `page` is zero-based (default: the current page); `scale` 0.25 to 16 (default 1, one pixel per point). Answers without presenting a frame; changes nothing |
 | `ui.open`, `ui.resize`, `ui.quit` | Native-only; return actionable errors on the web |
 
 ## Validation and maintenance

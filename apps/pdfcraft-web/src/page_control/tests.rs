@@ -19,6 +19,7 @@ fn envelopes_and_read_policy_compile_on_native() {
     assert_eq!(serde_json::from_str::<Value>(&encode(Err("bad".into()))).unwrap(), json!({"ok":false,"error":"bad"}));
     assert!(reads_only("c0.inspect"));
     assert!(reads_only("c0.documentBytes"));
+    assert!(reads_only("ui.render"));
     for method in ["c0.set", "c0.goTo", "c0.newDocument", "c0.openFile", "c0.cancelFileDialog"] {
         assert!(!reads_only(method));
     }

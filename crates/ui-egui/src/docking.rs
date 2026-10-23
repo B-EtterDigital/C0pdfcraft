@@ -431,7 +431,7 @@ pub fn show(app: &mut crate::PdfCraftApp, ui: &mut egui::Ui) {
     publish_visibility(app, &workspace);
     app.docking = workspace;
     for mut action in output.actions {
-        if (app.active.is_none() || !app.chrome.tools_panel)
+        if (app.active.is_none() || crate::c0_host::trims_dock(app))
             && let Action::ResizeSplit { path, .. } = &mut action
         {
             let Some(saved_path) = saved_split_path(&app.docking.layout, &rendered, path) else { continue };

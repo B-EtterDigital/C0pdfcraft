@@ -277,7 +277,7 @@ impl Control {
     fn handle(&mut self, ctx: &egui::Context, host: &mut impl Host, method: &str, p: &Value) -> Handled {
         let str_param = |k: &str| p.get(k).and_then(Value::as_str).ok_or_else(|| format!("{method}: missing string parameter {k}"));
         let r: Result<Handled, String> = (|| match method {
-            method if method.starts_with("c0.") => Ok(Handled::Now(host.c0(ctx, method, p))),
+            method if method.starts_with("c0.") || method == "ui.render" => Ok(Handled::Now(host.c0(ctx, method, p))),
             "ui.state" => {
                 let mut state = host.state();
                 let size = ctx.input(|i| i.viewport_rect().size());

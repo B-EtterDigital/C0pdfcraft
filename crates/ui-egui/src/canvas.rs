@@ -4073,7 +4073,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     }
     // Read mode hides the tools (#2646).
     if app.mode != crate::Mode::Read {
-        quick_bar(app, avail, ui);
+        crate::c0_host::strip::show(app, avail, ui, quick_bar);
     }
     if let Some((source, file, destination)) = remote_open {
         app.open_remote_link(source, file, destination);
@@ -4637,7 +4637,7 @@ fn quick_bar(app: &mut PdfCraftApp, area: Rect, ui: &mut egui::Ui) {
             .inner_margin(egui::Margin::same(6))
             .show(ui, |ui| {
                 ui.spacing_mut().item_spacing.y = 2.0;
-                ui.vertical(|ui| {
+                ui.scope_builder(crate::c0_host::strip::columns(ui, app), |ui| {
                     if icons::button(ui, "mouse-pointer-2", 32.0, app.quick_tool == QuickTool::Select, tl!("Select (V)")).clicked() {
                         app.quick_tool = QuickTool::Select;
                     }

@@ -3171,20 +3171,14 @@ impl eframe::App for PdfCraftApp {
         if self.draws_window_frame() {
             window_controls::resize_edges(&ctx);
         }
-        if self.chrome.title_bar && self.chrome.tab_strip {
-            chrome::tab_strip(self, ui);
-        }
-        if self.chrome.app_bar {
-            chrome::mode_bar(self, ui);
-        }
+        c0_host::when(self.chrome.title_bar && self.chrome.tab_strip, || chrome::tab_strip(self, ui));
+        c0_host::when(self.chrome.app_bar, || chrome::mode_bar(self, ui));
         if self.active.is_some() {
-            if self.chrome.right_rail {
-                chrome::right_rail(self, ui);
-            }
+            c0_host::when(self.chrome.right_rail, || chrome::right_rail(self, ui));
             // Read mode hides the tools, not the navigation panes: the rail stays visible
             // there, so its buttons (Bookmarks, Page thumbnails, ...) must open their panels.
             // Outside Read mode the docking workspace draws the inspector.
-            if self.mode == Mode::Read && self.right.is_some() {
+            if self.mode == Mode::Read && self.right.is_some() && !self.chrome.right_dock_collapsed {
                 egui::Panel::right("read_right_panel")
                     .resizable(true)
                     .default_size(330.0)

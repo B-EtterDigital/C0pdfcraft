@@ -26,6 +26,10 @@ pub(super) fn set(app: &mut PdfCraftApp, ctx: &egui::Context, params: &Value) ->
             "community_links" => &mut app.chrome.community_links,
             "right_rail" => &mut app.chrome.right_rail,
             "tools_panel" => &mut app.chrome.tools_panel,
+            "toolbar" => &mut app.chrome.toolbar,
+            "toolbar_double" => &mut app.chrome.toolbar_double,
+            "toolbar_floating" => &mut app.chrome.toolbar_floating,
+            "right_dock_collapsed" => &mut app.chrome.right_dock_collapsed,
             _ => {
                 unknown.push(format!("panels.{key}"));
                 continue;
@@ -38,6 +42,7 @@ pub(super) fn set(app: &mut PdfCraftApp, ctx: &egui::Context, params: &Value) ->
             invalid.push(format!("panels.{key}"));
         }
     }
+    app.chrome.dock_seen = app.right;
     ctx.request_repaint();
     Ok(json!({"applied": applied, "unknown": unknown, "invalid": invalid}))
 }
