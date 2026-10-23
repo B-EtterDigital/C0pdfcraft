@@ -149,7 +149,11 @@ fn replacement_uses_existing_save_changes_cancel_discard_and_save() {
 fn panel_defaults_settings_validation_and_no_persistence() {
     let (mut h, client) = harness(0);
     let defaults = serde_json::to_value(h.state().chrome).unwrap();
-    assert!(defaults.as_object().unwrap().values().all(|v| v == true));
+    // Every switch that hides upstream chrome defaults to shown; the mode switches default to upstream's layout.
+    for (key, value) in defaults.as_object().unwrap() {
+        let off = matches!(key.as_str(), "toolbar_double" | "toolbar_floating" | "right_dock_collapsed");
+        assert_eq!(*value, if key == "toolbar_pos" { Value::Null } else { json!(!off) }, "{key}");
+    }
     assert!(h.query_by_label("Welcome to PdfCraft").is_some());
     let result = call(
         &mut h,

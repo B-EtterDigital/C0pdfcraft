@@ -156,6 +156,24 @@ try {
   assert.equal((await ok('c0.inspect')).pageCount, 2);
   await ok('c0.goTo', {page:1}); await ok('c0.documentBytes');
   checks.push('requests while animation frames disabled');
+  for (const [key, strip] of [['toolbar_double', {columns:2, floating:false}], ['toolbar_floating', {columns:1, floating:true}]]) {
+    const set = await ok('c0.set', {panels:{[key]:true}});
+    assert.deepEqual(set.applied, [`panels.${key}`]);
+    const panes = (await ok('c0.inspect')).panes;
+    assert.equal(panes.chrome[key], true); assert.equal(panes.strip.columns, strip.columns); assert.equal(panes.strip.floating, strip.floating);
+    await ok('c0.set', {panels:{[key]:false}}); assert.equal((await ok('c0.inspect')).panes.chrome[key], false);
+  }
+  await ok('c0.set', {panels:{toolbar:false}}); assert.equal((await ok('c0.inspect')).panes.chrome.toolbar, false);
+  await ok('c0.set', {panels:{toolbar:true}});
+  await ok('c0.set', {panels:{right_dock_collapsed:true}}); assert.equal((await ok('c0.inspect')).panes.chrome.right_dock_collapsed, true);
+  await ok('c0.set', {panels:{right_dock_collapsed:false}}); assert.equal((await ok('c0.inspect')).panes.chrome.right_dock_collapsed, false);
+  assert.deepEqual((await ok('c0.set', {panels:{toolbar_triple:true}})).unknown, ['panels.toolbar_triple']);
+  checks.push('tool-strip modes and right-dock fold set and read back');
+  const rendered = await ok('ui.render', {page:1, scale:0.5});
+  const png = Buffer.from(rendered.png_base64, 'base64');
+  assert.equal(png.subarray(1, 4).toString(), 'PNG'); assert.equal(png.readUInt32BE(16), rendered.width); assert.equal(rendered.page, 1);
+  assert.equal((await request('ui.render', {page:99})).ok, false);
+  checks.push('frameless ui.render while animation frames disabled');
   assert.equal((await request('c0.goTo', {page:-1})).ok, false);
   assert.equal((await request('c0.openFile', {name:'bad.pdf',bytes:'!'})).ok, false);
   assert.equal((await evaluate('window.__c0hostRequest("oops").then(JSON.parse)')).ok, false);
