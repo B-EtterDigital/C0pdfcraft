@@ -208,5 +208,5 @@ try {
   if (browser.exitCode === null) {
     const exited = new Promise(done => browser.once('exit', done)); browser.kill('SIGTERM'); await exited;
   }
-  await rm(work, {recursive:true, force:true});
+  await rm(work, {recursive:true, force:true, maxRetries:10, retryDelay:200});
 }
