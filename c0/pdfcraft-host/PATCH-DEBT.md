@@ -22,10 +22,13 @@ lines are still patch debt and are described below; they do not contribute to th
 | `crates/ui-egui/src/lib.rs` | 13 | Register modules/unsaved Chrome, initialize session, picker hook, replacement poll, and the title/app-bar/rail gates as one `c0_host::when` line each (9 lines before the tool-mode lane), plus the Read-mode side panel's fold gate | Host integration plus browser session wall clock | clock initialization: **yes, as is**; remaining lines: no |
 | `crates/ui-egui/src/palette.rs` | 3 | Filter community commands | Palette cannot reintroduce hidden promotions | no, host policy |
 | `crates/ui-egui/src/theme.rs` | 2 | New override module and one token resolution line | Persistent runtime overrides across theme changes | no, host palette |
+| `docs/brand/artcraft-logo-white.svg` | 1 | Blank 1x1 SVG in place of the ArtCraft mark the build embeds (`widgets.rs`) | Upstream trademarks never ship in our build (K-46); the code still compiles unchanged | no |
+| `docs/brand/artcraft-logo.svg` | 1 | Blank 1x1 SVG in place of the ArtCraft mark the build embeds (`widgets.rs`) | Upstream trademarks never ship in our build (K-46); the code still compiles unchanged | no |
+| `docs/brand/artcraft-mark.svg` | 1 | Blank 1x1 SVG in place of the ArtCraft mark the build embeds (`widgets.rs`) | Upstream trademarks never ship in our build (K-46); the code still compiles unchanged | no |
 
-Total: 65
+Total: 68
 
-Ratchet: 65
+Ratchet: 68
 
 Measured on the tool-mode commit (was 68 at `e4ee673190f380a0a7484efa01e66891aa914dd7`; the lib.rs gates were compacted to pay for the strip and fold lines):
 
