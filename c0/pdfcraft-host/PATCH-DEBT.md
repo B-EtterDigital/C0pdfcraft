@@ -16,21 +16,21 @@ lines are still patch debt and are described below; they do not contribute to th
 | `crates/ui-egui/src/commands.rs` | 6 | Gate community command execution and menu rows | Hide links consistently and refuse hidden actions | no, host policy |
 | `crates/ui-egui/src/control.rs` | 5 | Host trait method, forwarding implementation and one dispatch arm for `c0.*` and `ui.render` | Reuse the existing queue | no, host API |
 | `crates/ui-egui/src/dialogs.rs` | 4 | Gate About mark; delegate footer to new module | Retain name, contributors and licence without promotions | no, host policy |
-| `crates/ui-egui/src/docking.rs` | 5 | Render projection and divider path translation (also while the right dock is folded) | Hide Tools without overwriting saved docking geometry | no, host policy |
 | `crates/ui-egui/src/editing.rs` | 1 | Select browser download MIME by file extension | Exports other than PDF must not be labelled application/pdf | **yes, as is** |
 | `crates/ui-egui/src/home.rs` | 4 | Early Home gate and delegate community card | Empty pasteboard; no hidden-card space | no, host policy |
-| `crates/ui-egui/src/lib.rs` | 13 | Register modules/unsaved Chrome, initialize session, picker hook, replacement poll, and the title/app-bar/rail gates as one `c0_host::when` line each (9 lines before the tool-mode lane), plus the Read-mode side panel's fold gate | Host integration plus browser session wall clock | clock initialization: **yes, as is**; remaining lines: no |
+| `crates/ui-egui/src/lib.rs` | 11 | Register modules/unsaved Chrome, initialize session, picker hook, replacement poll, and the title and app-bar gates as one `c0_host::when` line each. The rail gate and the Read-mode side panel's fold gate moved to `side_panels.rs` with upstream's side panels (2026-10-26) | Host integration plus browser session wall clock | clock initialization: **yes, as is**; remaining lines: no |
+| `crates/ui-egui/src/side_panels.rs` | 2 (1 replaced) | `open_panes` ends with `crate::c0_host::project_panes(app, &mut open)` (Tools hidden by the host, the side panel while the right dock is folded); `show` draws the rail only when `app.chrome.right_rail` | Hide Tools and fold the right dock without touching `left_open`, `right` or the saved widths | no, host policy |
 | `crates/ui-egui/src/palette.rs` | 3 | Filter community commands | Palette cannot reintroduce hidden promotions | no, host policy |
 | `crates/ui-egui/src/theme.rs` | 2 | New override module and one token resolution line | Persistent runtime overrides across theme changes | no, host palette |
 | `docs/brand/artcraft-logo-white.svg` | 1 | Blank 1x1 SVG in place of the ArtCraft mark the build embeds (`widgets.rs`) | Upstream trademarks never ship in our build (K-46); the code still compiles unchanged | no |
 | `docs/brand/artcraft-logo.svg` | 1 | Blank 1x1 SVG in place of the ArtCraft mark the build embeds (`widgets.rs`) | Upstream trademarks never ship in our build (K-46); the code still compiles unchanged | no |
 | `docs/brand/artcraft-mark.svg` | 1 | Blank 1x1 SVG in place of the ArtCraft mark the build embeds (`widgets.rs`) | Upstream trademarks never ship in our build (K-46); the code still compiles unchanged | no |
 
-Total: 68
+Total: 63
 
-Ratchet: 68
+Ratchet: 63
 
-Measured on the tool-mode commit (was 68 at `e4ee673190f380a0a7484efa01e66891aa914dd7`; the lib.rs gates were compacted to pay for the strip and fold lines):
+Measured on the 2026-10-26 upstream merge (was 68 before it). Upstream replaced the docking tree with craft-ui task panes (`side_panels.rs`, #4606) and deleted `docking.rs`: its 5-line row is gone. Our Tools hide and dock fold are now one filter on upstream's list of open panes (`c0_host::project_panes`), and the split-path translation (`c0_host/panels.rs`) was deleted because panes keep their own widths, so a hidden pane no longer shifts a divider path; `c0_tool_modes.rs` checks the saved `side_panels` stay untouched while folded. lib.rs 13 to 11, side_panels.rs +2. Before that it was 68 at `e4ee673190f380a0a7484efa01e66891aa914dd7` (the lib.rs gates were compacted to pay for the strip and fold lines):
 
 ```sh
 git diff --numstat --diff-filter=M main c0/main -- . ':!c0'

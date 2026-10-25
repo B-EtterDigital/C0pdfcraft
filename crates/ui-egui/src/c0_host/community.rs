@@ -6,7 +6,7 @@ use crate::{
 };
 
 pub(crate) fn home(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
-    if !app.chrome.community_links {
+    if !app.chrome.community_links || app.community_card_closed {
         return;
     }
     let t = Tokens::get(ui.ctx());
@@ -22,6 +22,12 @@ pub(crate) fn home(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                 ui.vertical(|ui| {
                     ui.label(egui::RichText::new(tl!("Join the ArtCraft community")).font(theme::semibold(15.0)));
                     ui.label(egui::RichText::new(tl!("Get help, share feedback and follow development on Discord.")).color(t.text_muted));
+                });
+                // Closed for this run only: the card is back on the next launch (upstream's close).
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                    if crate::icons::button(ui, "x", 24.0, false, tl!("Close")).clicked() {
+                        app.community_card_closed = true;
+                    }
                 });
             });
             ui.add_space(8.0);

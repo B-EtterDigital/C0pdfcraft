@@ -61,20 +61,20 @@ pub(crate) fn show(app: &mut PdfCraftApp, area: Rect, ui: &mut Ui, draw: fn(&mut
         return draw(app, area, ui);
     }
     let ctx = ui.ctx().clone();
-    let size = ctx.memory(|m| m.area_rect(Id::new(BAR))).map_or(vec2(46.0, 220.0), |r| r.size());
+    let size = ctx.memory(|m| m.area_rect(Id::unique(BAR))).map_or(vec2(46.0, 220.0), |r| r.size());
     let room = (area.size() - size - vec2(2.0 * MARGIN, 2.0 * MARGIN)).max(Vec2::ZERO);
     let at = app.chrome.toolbar_pos.map_or(Vec2::ZERO, |p| vec2(p[0], p[1]).clamp(Vec2::ZERO, room));
     draw(app, area.translate(at), ui);
     let t = crate::theme::Tokens::get(&ctx);
     let corner = area.min + at + vec2(MARGIN, MARGIN - GRIP);
-    egui::Area::new(Id::new("quick-bar-grip")).order(egui::Order::Middle).fixed_pos(corner).show(&ctx, |ui| {
+    egui::Area::new(Id::unique("quick-bar-grip")).order(egui::Order::Middle).fixed_pos(corner).show(&ctx, |ui| {
         let (rect, resp) = ui.allocate_exact_size(vec2(size.x, GRIP), Sense::drag());
         ui.painter().rect_filled(rect, CornerRadius::same(6), t.card);
         ui.painter().rect_stroke(rect, CornerRadius::same(6), Stroke::new(1.0, t.border), egui::StrokeKind::Inside);
         for k in [-1.0, 0.0, 1.0] {
             ui.painter().circle_filled(rect.center() + vec2(k * 6.0, 0.0), 1.2, t.text_faint);
         }
-        resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, "Move toolbar"));
+        resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, true, "Move toolbar"));
         let resp = resp.on_hover_cursor(egui::CursorIcon::Grab);
         if resp.dragged() {
             let to = (at + resp.drag_delta()).clamp(Vec2::ZERO, room);

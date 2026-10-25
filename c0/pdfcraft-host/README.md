@@ -205,7 +205,7 @@ All existing methods keep their upstream request/reply semantics inside the page
 | `ui.drag` | `{from:[x,y],to:[x,y],steps?,modifiers?,button?}` |
 | `ui.type` | `{text}` |
 | `ui.key` | `{key,modifiers?}` |
-| `ui.dock`, `ui.dock.reset` | Existing panel layout controls |
+| `ui.panel`, `ui.dock.reset` | Upstream side panel controls: `{panel: "tools"|"side", open?, width?}`; reset restores the defaults |
 | `ui.screenshot` | `{region?}`; base64 PNG, requires presentation |
 | `ui.render` | `{page?,scale?}`; frameless: `{page,pageCount,scale,width,height,png_base64}`, the page alone from the engine's renderer. `page` is zero-based (default: the current page); `scale` 0.25 to 16 (default 1, one pixel per point). Answers without presenting a frame; changes nothing |
 | `ui.open`, `ui.resize`, `ui.quit` | Native-only; return actionable errors on the web |

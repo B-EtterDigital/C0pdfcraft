@@ -64,7 +64,7 @@ fn defaults_are_upstreams_and_inspect_reports_every_key() {
     }
     assert_eq!(panes["strip"], json!({"visible": true, "columns": 1, "floating": false, "pos": null}));
     // Upstream's place: 14 points in from the document area's corner, one column, no grip.
-    let bar = h.ctx.memory(|m| m.area_rect(egui::Id::new("quick-bar"))).expect("the strip is drawn");
+    let bar = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).expect("the strip is drawn");
     assert!(h.query_by_label("Move toolbar").is_none());
     let hand = h.get_by_label("Hand (H)").rect();
     let select = h.get_by_label("Select (V)").rect();
@@ -132,11 +132,11 @@ fn double_puts_the_strip_in_two_columns_and_back() {
     let (mut h, client) = harness(1, |_| {});
     assert_eq!(columns_of(&h), 1);
     let first = h.get_by_label("Select (V)").rect().min;
-    let single_height = h.ctx.memory(|m| m.area_rect(egui::Id::new("quick-bar"))).unwrap().height();
+    let single_height = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).unwrap().height();
     set(&mut h, &client, "toolbar_double", json!(true));
     h.run_steps(3);
     assert_eq!(columns_of(&h), 2, "buttons wrap into a second column");
-    let bar = h.ctx.memory(|m| m.area_rect(egui::Id::new("quick-bar"))).unwrap();
+    let bar = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).unwrap();
     assert!(bar.height() < single_height, "the two columns are shorter than one");
     assert_eq!(h.get_by_label("Select (V)").rect().min, first, "the first button stays where it was");
     assert_eq!(panes(&mut h, &client)["strip"]["columns"], 2);
@@ -203,13 +203,13 @@ fn pages_panel_shown(h: &H) -> bool {
 fn right_dock_folds_to_the_rail_and_an_icon_opens_it_again() {
     let (mut h, client) = harness(2, |app| app.right = Some(RightPanel::Pages));
     assert!(pages_panel_shown(&h), "the Pages panel is open");
-    let saved = serde_json::to_value(&h.state().docking).unwrap();
+    let saved = h.state().side_panels;
     assert_eq!(set(&mut h, &client, "right_dock_collapsed", json!(true))["applied"], json!(["panels.right_dock_collapsed"]));
     h.run_steps(3);
     assert!(!pages_panel_shown(&h), "folded");
     assert!(h.query_by_label("Bookmarks").is_some(), "the rail keeps its icons");
     assert_eq!(h.state().right, Some(RightPanel::Pages), "the open pane is remembered");
-    assert_eq!(serde_json::to_value(&h.state().docking).unwrap(), saved, "the saved layout is untouched");
+    assert_eq!(h.state().side_panels, saved, "the saved layout is untouched");
     assert_eq!(panes(&mut h, &client)["chrome"]["right_dock_collapsed"], true);
     // A different icon opens its pane and unfolds.
     h.get_by_label("Bookmarks").click();

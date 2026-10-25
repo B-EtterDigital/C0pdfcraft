@@ -4,11 +4,9 @@ pub(crate) mod community;
 mod dock;
 pub mod files;
 mod inspect;
-mod panels;
 mod render;
 mod settings;
 pub(crate) mod strip;
-pub(crate) use panels::split_path;
 
 use crate::PdfCraftApp;
 use serde_json::{Value, json};
@@ -85,19 +83,12 @@ pub(crate) fn when(on: bool, draw: impl FnOnce()) {
     }
 }
 
-/// The rendered dock differs from the saved one: Tools hidden by the host, or the right dock folded.
-pub(crate) fn trims_dock(app: &PdfCraftApp) -> bool {
-    !app.chrome.tools_panel || app.chrome.right_dock_collapsed
-}
-
-/// Project host visibility into the rendered layout, retaining the saved docking tree.
-pub(crate) fn project_panels(app: &PdfCraftApp, layout: &mut craft_ui::docking::Layout<crate::docking::Panel>) {
-    use crate::docking::Panel;
-    use craft_ui::docking::Action;
-    if !app.chrome.tools_panel && layout.contains(&Panel::Tools) {
-        let _ = layout.apply(Action::Close { panel: Panel::Tools });
-    }
-    if app.chrome.right_dock_collapsed && layout.contains(&Panel::Inspector) {
-        let _ = layout.apply(Action::Close { panel: Panel::Inspector });
-    }
+/// Host visibility on upstream's open panes: Tools hidden by the host, the side panel while the
+/// right dock is folded. Only the drawn list changes; `left_open`, `right` and the widths are kept.
+pub(crate) fn project_panes(app: &PdfCraftApp, open: &mut Vec<crate::side_panels::Pane>) {
+    use crate::side_panels::Pane;
+    open.retain(|pane| match pane {
+        Pane::Tools => app.chrome.tools_panel,
+        Pane::Side => !app.chrome.right_dock_collapsed,
+    });
 }
