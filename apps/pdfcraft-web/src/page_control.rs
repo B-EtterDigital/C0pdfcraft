@@ -33,7 +33,7 @@ pub fn parse(text: &str) -> Result<(String, Value), String> {
 }
 
 pub fn reads_only(method: &str) -> bool {
-    matches!(method, "c0.inspect" | "c0.documentBytes" | "ui.render" | "ui.state" | "ui.inspect" | "ui.commands")
+    matches!(method, "c0.inspect" | "c0.selection" | "c0.documentBytes" | "ui.render" | "ui.state" | "ui.inspect" | "ui.commands")
 }
 
 pub fn encode(reply: pdfcraft_ui_egui::control::Reply) -> String {

@@ -3,6 +3,7 @@
 pub(crate) mod community;
 mod dock;
 pub mod files;
+mod ai;
 mod inspect;
 mod panels;
 mod render;
@@ -67,6 +68,8 @@ pub fn handle(app: &mut PdfCraftApp, ctx: &egui::Context, method: &str, params: 
     pdfcraft_engine::guard(|| match method {
         "c0.inspect" => Ok(inspect::inspect(app, ctx)),
         "c0.goTo" => inspect::go_to(app, ctx, params),
+        "c0.selection" => ai::selection(app),
+        "c0.place" => ai::place(app, params),
         "c0.documentBytes" => files::document_bytes(app, params),
         "c0.openFile" => files::open(app, ctx, params),
         "c0.newDocument" => files::new_document(app, ctx, params),

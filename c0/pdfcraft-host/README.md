@@ -62,6 +62,8 @@ and retains the upstream five-second timeout. No server or network listener is i
 | `c0.documentBytes` | `{format?: "pdf"}` | `{name,format:"pdf",bytes,revision}` |
 | `c0.openFile` | `{name,bytes}` | `{opened:true,pending:false}` or `{pending:true,needsConfirmation:true}` |
 | `c0.newDocument` | `{template?: "blank"}`; empty string also accepted | Same replacement result; creates upstream's one-page US Letter PDF |
+| `c0.selection` | `{}` | `{kind:"text",page,pageCount,selectedText?,pageText,documentTitle}`; `pageText` is at most 20000 characters |
+| `c0.place` | `{note,page?,title?}` | `{ok:true,placed:"note",page,id,index,text}`; adds a sticky-note comment at the page top-left as one undo step |
 | `c0.cancelFileDialog` | `{}` | `{cancelled:boolean}` |
 | `c0.set` | `{themeTokens?,panels?}` | `{applied:string[],unknown:string[],invalid:string[]}` |
 

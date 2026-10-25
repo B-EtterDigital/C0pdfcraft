@@ -272,3 +272,85 @@ fn text_conversion_uses_upstream_unsaved_document_semantics() {
     assert!(call(&mut h, &client, "c0.openFile", json!({"name":"bad.pdf", "bytes":"eA=="})).is_err());
     assert_eq!(call(&mut h, &client, "c0.inspect", json!({})).unwrap(), before);
 }
+
+fn text_doc(h: &mut Harness<'static, PdfCraftApp>, client: &ControlClient) {
+    call(h, client, "c0.openFile", json!({"name":"notes.txt", "bytes":STANDARD.encode(b"Alpha beta gamma delta")})).unwrap();
+    // The text layer arrives from the render worker; wait until the first glyph is placed on screen.
+    for _ in 0..200 {
+        h.step();
+        if h.state().views[0].glyph_screen_pos(0, 0).is_some() {
+            break;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(10));
+    }
+}
+
+#[test]
+fn selection_reads_page_text_selected_text_and_title() {
+    let (mut h, client) = harness(0);
+    assert!(call(&mut h, &client, "c0.selection", json!({})).is_err(), "no PDF open");
+    text_doc(&mut h, &client);
+    let s = call(&mut h, &client, "c0.selection", json!({})).unwrap();
+    assert_eq!(s["kind"], "text");
+    assert_eq!(s["page"], 0);
+    assert_eq!(s["pageCount"], 1);
+    assert_eq!(s["documentTitle"], "notes");
+    assert!(s["pageText"].as_str().unwrap().contains("Alpha beta gamma delta"), "{s}");
+    assert!(s.get("selectedText").is_none());
+    h.state_mut().views[0].select_text(0, 0, 4);
+    let s = call(&mut h, &client, "c0.selection", json!({})).unwrap();
+    assert_eq!(s["selectedText"], "Alpha", "{s}");
+    assert!(call(&mut h, &client, "c0.selection", json!([])).is_err());
+}
+
+#[test]
+fn place_adds_one_undoable_note_and_marks_dirty() {
+    let (mut h, client) = harness(2);
+    let before = call(&mut h, &client, "c0.inspect", json!({})).unwrap();
+    assert_eq!(before["annotationCount"], 0);
+    let placed = call(&mut h, &client, "c0.place", json!({"note": "Summary line", "title": "AI summary", "page": 1})).unwrap();
+    assert_eq!(placed["ok"], true);
+    assert_eq!(placed["placed"], "note");
+    assert_eq!(placed["page"], 1);
+    assert!(placed["id"].is_string(), "{placed}");
+    let after = call(&mut h, &client, "c0.inspect", json!({})).unwrap();
+    assert_eq!(after["annotationCount"], 1);
+    assert_eq!(after["dirty"], true);
+    assert_eq!(after["canUndo"], true);
+    let doc = h.state().session.get(h.state().views[0].id).unwrap();
+    let a = &doc.info.annotations[0];
+    assert_eq!((a.page, a.subtype.as_str(), a.contents.as_deref()), (1, "Text", Some("AI summary\n\nSummary line")));
+    // The default page is the current one.
+    let second = call(&mut h, &client, "c0.place", json!({"note": "Plain"})).unwrap();
+    assert_eq!(second["page"], 0);
+    // One Ctrl+Z removes exactly one placement.
+    let (i, id) = h.state().active_ids().unwrap();
+    assert_eq!(i, 0);
+    h.state_mut().session.undo(id).unwrap();
+    assert_eq!(h.state().session.get(id).unwrap().info.annotations.len(), 1);
+    h.state_mut().session.undo(id).unwrap();
+    assert_eq!(h.state().session.get(id).unwrap().info.annotations.len(), 0);
+}
+
+#[test]
+fn place_rejects_bad_params_without_changing_the_document() {
+    let (mut h, client) = harness(0);
+    assert!(call(&mut h, &client, "c0.place", json!({"note": "x"})).is_err(), "no PDF open");
+    let (mut h, client) = harness(2);
+    let before = call(&mut h, &client, "c0.inspect", json!({})).unwrap();
+    for params in [
+        json!({}),
+        json!({"note": ""}),
+        json!({"note": "   "}),
+        json!({"note": 5}),
+        json!({"note": "x", "title": 3}),
+        json!({"note": "x", "page": 2}),
+        json!({"note": "x", "page": -1}),
+        json!({"note": "x", "page": "0"}),
+        json!({"note": "x".repeat(20_001)}),
+    ] {
+        let e = call(&mut h, &client, "c0.place", params.clone()).unwrap_err();
+        assert!(!e.is_empty(), "{params}");
+    }
+    assert_eq!(call(&mut h, &client, "c0.inspect", json!({})).unwrap(), before);
+}
