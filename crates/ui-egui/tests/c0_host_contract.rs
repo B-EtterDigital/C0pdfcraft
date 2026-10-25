@@ -71,7 +71,7 @@ fn all_host_replies_empty_state_and_invalid_requests() {
 #[test]
 fn bytes_round_trip_preserves_dirty_revision_history_and_other_tabs() {
     let (mut h, client) = harness(2);
-    assert!(h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Chapter".into(), page: 1 }));
+    assert!(h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Chapter".into(), page: 1, left: None, top: None }));
     let before = call(&mut h, &client, "c0.inspect", json!({})).unwrap();
     assert_eq!(before["canUndo"], true);
     assert_eq!(before["canRedo"], false);
@@ -101,7 +101,7 @@ fn bytes_round_trip_preserves_dirty_revision_history_and_other_tabs() {
 #[test]
 fn navigation_is_zero_based_validated_and_outline_aware() {
     let (mut h, client) = harness(3);
-    h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "End".into(), page: 2 });
+    h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "End".into(), page: 2, left: None, top: None });
     assert_eq!(call(&mut h, &client, "c0.goTo", json!({"page": 1})).unwrap()["page"], 1);
     assert_eq!(call(&mut h, &client, "c0.goTo", json!({"outline": 0})).unwrap()["page"], 2);
     for params in [json!({}), json!({"page": -1}), json!({"page": 3}), json!({"page": 1.5}), json!({"outline": 99}), json!({"page": 0,"outline": 0})]
@@ -115,7 +115,7 @@ fn navigation_is_zero_based_validated_and_outline_aware() {
 fn replacement_uses_existing_save_changes_cancel_discard_and_save() {
     for choice in [None, Some(false), Some(true)] {
         let (mut h, client) = harness(1);
-        h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Keep".into(), page: 0 });
+        h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Keep".into(), page: 0, left: None, top: None });
         let id = h.state().views[0].id;
         let path = std::env::temp_dir().join(format!("c0pdf-save-{}-{}.pdf", std::process::id(), choice == Some(true)));
         h.state_mut().save_override = Some(path.to_string_lossy().into_owned());
