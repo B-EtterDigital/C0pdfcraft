@@ -1,0 +1,108 @@
+twiggy 0.8.0; compiler wasm analysis before wasm-bindgen/wasm-opt.
+Names and metadata in these files are not the final shipped wasm size.
+
+head: twiggy top -n 40 head-raw.wasm
+ Shallow Bytes │ Shallow % │ Item
+───────────────┼───────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+      13444867 ┊    22.65% ┊ data segment ".rodata"
+       4766949 ┊     8.03% ┊ "function names" subsection
+        802616 ┊     1.35% ┊ custom section '__wasm_bindgen_unstable'
+        182766 ┊     0.31% ┊ pdfcraft_ui_egui[5781928706e1799d]::canvas::document_area::{closure#35}
+        139900 ┊     0.24% ┊ pdfcraft_ui_egui[5781928706e1799d]::dialogs::dialogs::{closure#2}
+        133200 ┊     0.22% ┊ pdfcraft_ui_egui[5781928706e1799d]::canvas::document_area
+         99577 ┊     0.17% ┊ core[608f92abc48d28da]::ptr::drop_glue::<pdfcraft_ui_egui[5781928706e1799d]::PdfCraftApp>
+         79747 ┊     0.13% ┊ pdfcraft_ui_egui[5781928706e1799d]::dialogs::dialogs
+         73936 ┊     0.12% ┊ <pdfcraft_ui_egui[5781928706e1799d]::PdfCraftApp>::restore
+         65051 ┊     0.11% ┊ pdfcraft_ui_egui[5781928706e1799d]::canvas::document_area::{closure#35}::{closure#50}
+         55202 ┊     0.09% ┊ pdfcraft_ui_egui[5781928706e1799d]::workflows::combine_ui::view::page
+         54268 ┊     0.09% ┊ <pdfcraft_render[b88770dffa9798c0]::inspect::core::Inspector>::fill
+         52614 ┊     0.09% ┊ pdfcraft_redact[4e97d128905eab94]::interp::process_from
+         47866 ┊     0.08% ┊ pdfcraft_ui_egui[5781928706e1799d]::panels::right::right_panel::{closure#1}::{closure#7}
+         46167 ┊     0.08% ┊ pdfcraft_ui_egui[5781928706e1799d]::canvas::organize::organize_grid::{closure#1}
+         46070 ┊     0.08% ┊ <lopdf[bb5ddd510667bd73]::reader::Reader>::read
+         43644 ┊     0.07% ┊ hayro_interpret[c606d7358d6ef1c2]::interpret::interpret_window::<pdfcraft_render[b88770dffa9798c0]::text::device::TextDevice>
+         43058 ┊     0.07% ┊ wgpu_core[4258d599b7be98cd]::command::render::encode_render_pass
+         42810 ┊     0.07% ┊ <pdfcraft_ui_egui[5781928706e1799d]::PdfCraftApp>::finish_render_frame
+         42789 ┊     0.07% ┊ pdfcraft_ui_egui[5781928706e1799d]::tools::comments::menu::quick_bar_controls
+         40476 ┊     0.07% ┊ hayro_jbig2[595d3477e95ca7d7]::decode::symbol::decode
+         39806 ┊     0.07% ┊ <naga[59a40d507ad31343]::valid::Validator>::validate_impl
+         39655 ┊     0.07% ┊ <image[a03092a7921d333b]::images::dynimage::DynamicImage>::resize_exact
+         39316 ┊     0.07% ┊ pdfcraft_edit[a04c905cf82c1749]::text::regions::styled::rewrite_styled_block
+         38418 ┊     0.06% ┊ <naga[59a40d507ad31343]::front::wgsl::lower::Lowerer>::call_builtin
+         37828 ┊     0.06% ┊ <pdfcraft_ui_egui[5781928706e1799d]::PdfCraftApp as eframe[6a7df2b3b042c60e]::epi::App>::logic
+         37801 ┊     0.06% ┊ <skrifa[4d8bea97a3f6821a]::outline::glyf::hint::engine::Engine>::run
+         37714 ┊     0.06% ┊ pdfcraft_ui_egui[5781928706e1799d]::panels::side_panels::show
+         37603 ┊     0.06% ┊ <skrifa[b0b5e2da99179197]::outline::glyf::hint::engine::Engine>::run
+         36303 ┊     0.06% ┊ pdfcraft_ui_egui[5781928706e1799d]::chrome::right_rail::{closure#4}::{closure#0}
+         35605 ┊     0.06% ┊ <vello_cpu[b71875dfb2e67dbf]::fine::Fine<fearless_simd[2768ee5694d9b57c]::generated::fallback::Fallback, vello_cpu[b71875dfb2e67dbf]::fine::lowp::U8Kernel>>::indexed_fill
+         35440 ┊     0.06% ┊ pdfcraft_ui_egui[5781928706e1799d]::panels::comments_panel::show
+         35100 ┊     0.06% ┊ pdfcraft_ui_egui[5781928706e1799d]::workflows::combine_ui::table::table_body::{closure#1}::{closure#0}
+         34306 ┊     0.06% ┊ pdfcraft_ui_egui[5781928706e1799d]::workflows::combine_ui::view::page::{closure#12}::{closure#1}
+         33971 ┊     0.06% ┊ hayro_interpret[c606d7358d6ef1c2]::interpret::interpret_window::<hayro_interpret[c606d7358d6ef1c2]::pattern::StencilPatternDevice<hayro[9549624cd9831ae9]::renderer::Renderer>>
+         33907 ┊     0.06% ┊ hayro_interpret[c606d7358d6ef1c2]::interpret::interpret_window::<hayro_interpret[c606d7358d6ef1c2]::font::type3::Type3ShapeGlyphDevice<hayro[9549624cd9831ae9]::renderer::Renderer>>
+         33612 ┊     0.06% ┊ <encoding_rs[dc97072d7b8e777d]::variant::VariantDecoder>::decode_to_utf8_raw
+         33536 ┊     0.06% ┊ <egui[479b9344bc3e9816]::memory::Memory as serde_core[7450e570e74c31c6]::ser::Serialize>::serialize::<&mut ron[43308a103c021fa]::ser::Serializer<&mut alloc[cb2b8d99256f33df]::string::String>>
+         33446 ┊     0.06% ┊ pdfcraft_render[b88770dffa9798c0]::text::layout::arrange
+         33032 ┊     0.06% ┊ pdfcraft_ui_egui[5781928706e1799d]::panels::comments_panel::header_controls
+      38379864 ┊    64.65% ┊ ... and 40887 more.
+      59369836 ┊   100.00% ┊ Σ [40927 Total Rows]
+
+head: twiggy dominators -d 2 -r 45 head-raw.wasm
+ Retained Bytes │ Retained % │ Dominator Tree
+────────────────┼────────────┼──────────────────────
+       53067182 ┊     89.38% ┊ table[0]
+       53067176 ┊     89.38% ┊   ⤷ elem[0]
+         802843 ┊      1.35% ┊ [6 Unreachable Items]
+
+upstream: twiggy top -n 40 upstream-raw.wasm
+ Shallow Bytes │ Shallow % │ Item
+───────────────┼───────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+      13451779 ┊    22.70% ┊ data segment ".rodata"
+       4752233 ┊     8.02% ┊ "function names" subsection
+        802616 ┊     1.35% ┊ custom section '__wasm_bindgen_unstable'
+        182766 ┊     0.31% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::canvas::document_area::{closure#35}
+        139590 ┊     0.24% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::dialogs::dialogs::{closure#2}
+        132137 ┊     0.22% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::canvas::document_area
+        101137 ┊     0.17% ┊ core[608f92abc48d28da]::ptr::drop_glue::<pdfcraft_ui_egui[dc8d959a9a750656]::PdfCraftApp>
+         79747 ┊     0.13% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::dialogs::dialogs
+         73936 ┊     0.12% ┊ <pdfcraft_ui_egui[dc8d959a9a750656]::PdfCraftApp>::restore
+         65051 ┊     0.11% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::canvas::document_area::{closure#35}::{closure#50}
+         55202 ┊     0.09% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::workflows::combine_ui::view::page
+         54268 ┊     0.09% ┊ <pdfcraft_render[b88770dffa9798c0]::inspect::core::Inspector>::fill
+         52614 ┊     0.09% ┊ pdfcraft_redact[4e97d128905eab94]::interp::process_from
+         47866 ┊     0.08% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::panels::right::right_panel::{closure#1}::{closure#7}
+         46167 ┊     0.08% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::canvas::organize::organize_grid::{closure#1}
+         46070 ┊     0.08% ┊ <lopdf[bb5ddd510667bd73]::reader::Reader>::read
+         43644 ┊     0.07% ┊ hayro_interpret[c606d7358d6ef1c2]::interpret::interpret_window::<pdfcraft_render[b88770dffa9798c0]::text::device::TextDevice>
+         43058 ┊     0.07% ┊ wgpu_core[4258d599b7be98cd]::command::render::encode_render_pass
+         42810 ┊     0.07% ┊ <pdfcraft_ui_egui[dc8d959a9a750656]::PdfCraftApp>::finish_render_frame
+         42789 ┊     0.07% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::tools::comments::menu::quick_bar_controls
+         40476 ┊     0.07% ┊ hayro_jbig2[595d3477e95ca7d7]::decode::symbol::decode
+         39806 ┊     0.07% ┊ <naga[59a40d507ad31343]::valid::Validator>::validate_impl
+         39655 ┊     0.07% ┊ <image[a03092a7921d333b]::images::dynimage::DynamicImage>::resize_exact
+         39388 ┊     0.07% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::panels::side_panels::show
+         39316 ┊     0.07% ┊ pdfcraft_edit[a04c905cf82c1749]::text::regions::styled::rewrite_styled_block
+         38418 ┊     0.06% ┊ <naga[59a40d507ad31343]::front::wgsl::lower::Lowerer>::call_builtin
+         37801 ┊     0.06% ┊ <skrifa[4d8bea97a3f6821a]::outline::glyf::hint::engine::Engine>::run
+         37603 ┊     0.06% ┊ <skrifa[b0b5e2da99179197]::outline::glyf::hint::engine::Engine>::run
+         36303 ┊     0.06% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::chrome::right_rail::{closure#4}::{closure#0}
+         35827 ┊     0.06% ┊ <pdfcraft_ui_egui[dc8d959a9a750656]::PdfCraftApp as eframe[2d56300c7fcc60ce]::epi::App>::logic
+         35605 ┊     0.06% ┊ <vello_cpu[b71875dfb2e67dbf]::fine::Fine<fearless_simd[2768ee5694d9b57c]::generated::fallback::Fallback, vello_cpu[b71875dfb2e67dbf]::fine::lowp::U8Kernel>>::indexed_fill
+         35440 ┊     0.06% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::panels::comments_panel::show
+         35403 ┊     0.06% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::workflows::combine_ui::table::table_body::{closure#1}::{closure#0}
+         34306 ┊     0.06% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::workflows::combine_ui::view::page::{closure#12}::{closure#1}
+         33971 ┊     0.06% ┊ hayro_interpret[c606d7358d6ef1c2]::interpret::interpret_window::<hayro_interpret[c606d7358d6ef1c2]::pattern::StencilPatternDevice<hayro[9549624cd9831ae9]::renderer::Renderer>>
+         33907 ┊     0.06% ┊ hayro_interpret[c606d7358d6ef1c2]::interpret::interpret_window::<hayro_interpret[c606d7358d6ef1c2]::font::type3::Type3ShapeGlyphDevice<hayro[9549624cd9831ae9]::renderer::Renderer>>
+         33612 ┊     0.06% ┊ <encoding_rs[dc97072d7b8e777d]::variant::VariantDecoder>::decode_to_utf8_raw
+         33536 ┊     0.06% ┊ <egui[479b9344bc3e9816]::memory::Memory as serde_core[7450e570e74c31c6]::ser::Serialize>::serialize::<&mut ron[43308a103c021fa]::ser::Serializer<&mut alloc[cb2b8d99256f33df]::string::String>>
+         33446 ┊     0.06% ┊ pdfcraft_render[b88770dffa9798c0]::text::layout::arrange
+         33032 ┊     0.06% ┊ pdfcraft_ui_egui[dc8d959a9a750656]::panels::comments_panel::header_controls
+      38267965 ┊    64.59% ┊ ... and 40784 more.
+      59250296 ┊   100.00% ┊ Σ [40824 Total Rows]
+
+upstream: twiggy dominators -d 2 -r 45 upstream-raw.wasm
+ Retained Bytes │ Retained % │ Dominator Tree
+────────────────┼────────────┼──────────────────────
+       52962358 ┊     89.39% ┊ table[0]
+       52962352 ┊     89.39% ┊   ⤷ elem[0]
+         802843 ┊      1.36% ┊ [6 Unreachable Items]
