@@ -27,8 +27,11 @@ All host switches default to upstream behaviour. No engine file is modified.
 | `crates/ui-egui/src/panels/side_panels.rs` | 2 | Project visible panes and gate rail without changing saved widths/open states (replaces docking.rs and Read-mode gate) |
 | `crates/ui-egui/src/theme.rs` | 2 | Register override module and resolve tokens |
 | `crates/ui-egui/src/workflows/combine_ui/parts.rs` | 1 | Browser-safe relative-date clock (moved from deleted combine_ui.rs) |
+| `docs/brand/artcraft-logo-white.svg` | 1 | Empty 1x1 include placeholder required by the fork trademark exclusion |
+| `docs/brand/artcraft-logo.svg` | 1 | Empty 1x1 include placeholder required by the fork trademark exclusion |
+| `docs/brand/artcraft-mark.svg` | 1 | Empty 1x1 include placeholder required by the fork trademark exclusion |
 
-Total: 60
+Total: 63
 
 Ratchet: 65
 

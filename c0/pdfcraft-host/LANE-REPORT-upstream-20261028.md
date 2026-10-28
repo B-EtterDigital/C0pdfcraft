@@ -1,5 +1,7 @@
 # PdfCraft upstream pull — 2026-10-28
 
+**Status: LANE-BLOCKED — host landing mode prevented all Cargo admission.**
+
 Branch: `fix`. Fork baseline: `186bab60e8bd76b97148f61d0a818e5680a9f3a3`
 (`origin/c0/main`). Pinned upstream: `5af102765222c8220df0f9eaa27bfa3bcf481ead`.
 Merge, no rebase; all fork commits retain their SHAs. No push or GitHub login.
@@ -43,19 +45,85 @@ It was never hand-edited.
 Baseline: **65 added hook lines**. Resolved merge before Cargo resolution: **60 added hook lines**; ratchet remains 65.
 See `PATCH-DEBT.md` for the per-file recount. The control extension grew from five to seven
 lines because upstream now has independent fake hosts; smaller pane/menu integration pays for
-this without growing the total. The three blank SVG lines bring the current full added-line total to **63**; Cargo may add
-one dependency-bookkeeping line, for **64**, still below 65.
+this without growing the total. The three blank SVG lines bring the final current added-line total to **63**; Cargo may add
+one dependency-bookkeeping line, for **64**, still below 65. `Cargo.lock` currently matches
+the pinned upstream exactly. The debt inventory includes all three blank placeholders.
 
 ## Verification
 
-Pending. Commands run on this fleet host, with `CARGO_BUILD_JOBS=4`, the shared
-`/srv/smoac/build/sow-fix-pdfcraft-target`, and `smoac-slot run gate 3 3600 -- ...`.
-Disk is checked before each build and any usage above 88% stops the lane.
-The first check queued at 12:50 UTC behind host landing mode, announced until 13:06 UTC.
-It was requeued as a required proof at 13:08 UTC. Landing mode was renewed repeatedly;
-at 13:26 UTC its current hold extended to approximately 13:45 UTC. Required proof priority
-does not bypass an active landing hold. The merge is checkpointed without compilation
-because this external admission block prevents the requested first green-unit checkpoint.
+No Cargo process was admitted; **zero tests ran**. This is an unvalidated merge checkpoint,
+not a green build. The controller must complete the commands below before LANE-DONE.
+Both the ordinary and required-proof attempts used `smoac-slot run gate 3 3600 -- ...`,
+`CARGO_BUILD_JOBS=4` and `CARGO_TARGET_DIR=/srv/smoac/build/sow-fix-pdfcraft-target`.
+The required proof additionally used `SMOAC_SLOT_KIND=proof SMOAC_SLOT_REQUIRED=1`.
+Neither attempt reached Cargo; both were cancelled while still queued, at handback.
+
+| Attempt | UTC interval | Load before (1/5/15 min) | Load after | Outcome |
+|---|---|---|---|---|
+| Native check, ordinary gate | 12:50–13:08 | 6.54 / 9.75 / 14.47 | 19.42 / 16.60 / 15.11 | Admission held; requeued as required proof |
+| Native check, required proof | 13:08–13:28 | 19.42 / 16.60 / 15.11 | 14.36 / 14.36 / 15.51 | Admission held; cancelled while queued |
+
+The command queued in both attempts was:
+
+```sh
+cargo check -p pdfcraft-ui-egui -p pdfcraft-web --features page-control
+```
+
+Disk was 81% before each attempt and 82% at handback; the 88% stop threshold was never
+crossed. No build started, so there are no per-build or per-test load pairs to report.
+The slot manager's first message announced landing mode until 13:06 UTC; subsequent
+renewals announced 13:25 UTC. At 13:26 UTC, read-only inspection found the hold had been
+renewed again. `/srv/smoac/landing-mode.json` at handback contained:
+
+```json
+{"by":"bdd-main","at":"2026-10-28T13:15:50.207Z","until":1793195150,"reason":"auto: 6 pending, nothing landed for 100 min","repo":"/home/bdd-main/DEV/Projects/002-C0X-v1"}
+```
+
+That hold expires at 13:45:50 UTC unless renewed. The slot implementation explicitly applies
+landing mode to new `proof` claims too; required-proof priority does not bypass this hold.
+No slot limits, holds, owners or host configuration were changed. No cargo/trunk command
+ran outside the slot manager. To protect the tree from cleanup, the resolved merge was
+checkpointed without compilation, then the mandatory separate hygiene commit was made.
+
+Pending commands, each under the required gate wrapper above, with `df -h /` and host load
+recorded before and after each; stop if disk usage exceeds 88%:
+
+```sh
+cargo test -p pdfcraft-ui-egui -p pdfcraft-web --features eframe/x11,eframe/wayland
+cargo test -p pdfcraft-web --features page-control
+cargo check -p pdfcraft-web --target wasm32-unknown-unknown --features page-control
+cargo clippy -p pdfcraft-ui-egui -p pdfcraft-web --all-targets --features page-control -- -D warnings
+cargo fmt --all --check
+cargo xtask layers
+```
+
+Low-disk native settings prepared for these commands were `CARGO_PROFILE_DEV_DEBUG=0`,
+`CARGO_PROFILE_TEST_DEBUG=0`, `CARGO_PROFILE_DEV_OPT_LEVEL=0`,
+`CARGO_PROFILE_TEST_OPT_LEVEL=0`, and `RUST_TEST_THREADS=1`.
+
+| Gate | Pass count / result |
+|---|---|
+| `pdfcraft-ui-egui` tests, including the three fork integration suites | 0 executed; blocked before compilation |
+| `pdfcraft-web` tests, including page-control feature tests | 0 executed; blocked before compilation |
+| Crates under `c0/` | No crate with Rust tests: `clock-probe` contains two wasm probe exports and no `#[test]`; `c0_host` is a module covered by the UI crate tests |
+| wasm web check | Not run; no release page built and no release wasm size measured; 41,943,040-byte cap unchanged |
+| clippy | Not run; no warning-clean claim |
+| `cargo fmt` / `cargo xtask layers` | Not run through Cargo |
+| Direct rustfmt check of changed Rust files and fork host modules | Passed (no Cargo/build invocation) |
+| `git diff --check` / unresolved conflict index scan | Passed |
+| Fork and pinned-upstream ancestry | Both passed |
+
+**Upstream-red tests:** none established because no tests ran. Any failing upstream test
+must still be rerun with the same command in a pure `5af102765222...` worktree; the common
+native command above deliberately avoids the fork-only feature so this comparison is possible.
+Fork-only test failures must be fixed, not classified upstream-red.
+
+**Asset inventory limitation:** the required removal of upstream trademarks leaves their
+upstream attribution entries stale. The three contributor-original empty 1x1 SVGs and hashes
+are documented in `BLANK-ASSETS.md`. `cargo xtask assets` was not run and is expected to
+reject the stale upstream inventory; no claim of a passing asset gate is made. The upstream
+manifest/tooling was left untouched to retain the binding patch-debt ratchet. This remains
+additional work alongside the blocked compile/test qualification.
 
 ## New upstream commands and menu entries
 
@@ -114,4 +182,18 @@ startup admission checks. No agent server is started by this merge.
 
 ## Assumptions I could not confirm
 
-Pending final qualification notes.
+- Compilation, native UI tests, wasm type checking and warning cleanliness are unconfirmed
+  because host landing mode denied admission. There is no passing runtime evidence yet.
+- Windows/macOS installers, native macOS menu rendering, real browser transport behaviour,
+  CJK fonts, and screenshot appearance were not qualified on this Linux host.
+- The old split-path helper has no purpose in the new flat pane renderer by source inspection;
+  the ported saved-state/fold tests still need to run before claiming runtime proof.
+- The upstream attribution inventory needs fork reconciliation as described above. No release
+  page was built, so the release wasm size is unknown.
+- The current hold's expiry is observable, but whether the controller renews it cannot be
+  confirmed from this repository. No controller question or GitHub login was attempted.
+
+Merge checkpoint: `63881dee8521078c71dc40a2b0fb325bdff695c4`.
+Trademark/CI cleanup: `12d9d69866c594d11ab398ba9035f8c7267c2ab3`.
+All commits use `C0 upstream sync <c0-upstream-sync@betterdigital.invalid>` on `fix`.
+The working tree is committed for controller retrieval over SSH; nothing was pushed.
