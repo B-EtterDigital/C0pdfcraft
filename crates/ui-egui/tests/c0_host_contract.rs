@@ -198,10 +198,9 @@ fn community_switch_removes_home_about_menu_palette_and_command_links() {
     for link in pdfcraft_engine::links::LINKS {
         assert!(call(&mut h, &client, "ui.command", json!({"id":link.command})).is_err());
     }
-    h.get_by_label("Menu").click();
-    h.run_steps(2);
-    h.get_by_label("Help ⏵").hover();
+    h.get_by_label("Help").click();
     h.run_steps(3);
+    assert!(h.query_by_label("About PdfCraft").is_some(), "the Help menu is open");
     for link in pdfcraft_engine::links::LINKS {
         assert!(h.query_by_label_contains(link.label).is_none());
     }
