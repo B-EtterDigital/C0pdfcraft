@@ -7,6 +7,8 @@ All host switches default to upstream behaviour. No engine file is modified.
 
 | File | Added lines | Hook / reason |
 |---|---:|---|
+| `ATTRIBUTION.md` | 1 | Regenerated repository asset-count heading after removing obsolete trademark records |
+| `Cargo.lock` | 1 | Existing page-control JSON dependency in the web package lock entry |
 | `apps/pdfcraft-web/Cargo.toml` | 4 | Opt-in page-control feature, native backends for feature tests, JSON dependency |
 | `apps/pdfcraft-web/src/main.rs` | 9 | Register runner and attach the opt-in bridge |
 | `crates/ui-egui/src/app.rs` | 5 | Browser session clock, default Chrome, replacement polling and title/tab/app-bar gates (moved from lib.rs) |
@@ -27,17 +29,21 @@ All host switches default to upstream behaviour. No engine file is modified.
 | `crates/ui-egui/src/panels/side_panels.rs` | 2 | Project visible panes and gate rail without changing saved widths/open states (replaces docking.rs and Read-mode gate) |
 | `crates/ui-egui/src/theme.rs` | 2 | Register override module and resolve tokens |
 | `crates/ui-egui/src/workflows/combine_ui/parts.rs` | 1 | Browser-safe relative-date clock (moved from deleted combine_ui.rs) |
-| `docs/brand/artcraft-logo-white.svg` | 1 | Empty 1x1 include placeholder required by the fork trademark exclusion |
-| `docs/brand/artcraft-logo.svg` | 1 | Empty 1x1 include placeholder required by the fork trademark exclusion |
-| `docs/brand/artcraft-mark.svg` | 1 | Empty 1x1 include placeholder required by the fork trademark exclusion |
+| `crates/ui-egui/src/widgets.rs` | 1 | Re-export fork-owned empty layout slots instead of embedding trademark placeholders |
 
 Total: 63
 
 Ratchet: 65
 
 Measured using `git diff --numstat --diff-filter=M 5af102765222 HEAD -- . ':!c0'`.
-Whole-file trademark/CI removals add no lines. The three one-line blank SVG
-include placeholders are included in the total after the separate hygiene commit.
+Whole-file trademark/CI removals add no lines. The size lane replaces three blank
+SVG placeholders with one widget re-export; the empty layout implementations live
+in the fork-owned `c0_host/brand.rs`. It also deletes the obsolete trademark asset
+records from `ATTRIBUTION.toml` and regenerates `ATTRIBUTION.md` (eight deleted
+rows and one replaced count heading, counted above).
+Page profile tuning lives entirely in C0-owned build tooling. The previous total
+of 63 omitted the existing one-line `Cargo.lock` dependency entry; the corrected
+starting total was 64, before this lane reduced it to 63.
 
 Deleted upstream blocks in `home.rs` and `dialogs.rs` live in `c0_host/community.rs`;
 default rendering includes upstream's new close button. The browser clock and MIME

@@ -1,7 +1,7 @@
 # C0pdf: PdfCraft as a C0VIBE guest page
 
 This page builds the existing `apps/pdfcraft-web` binary with the opt-in `page-control`
-feature. It uses PdfCraft 0.10.1's engine, tools, egui interface and Glow renderer. It starts
+feature. It uses upstream's engine, tools, egui interface and Glow renderer. It starts
 without a demo, sample or blank document. The page and canvas are transparent until painting.
 
 ## Build
@@ -9,11 +9,14 @@ without a demo, sample or blank document. The page and canvas are transparent un
 From this directory on the executor:
 
 ```sh
-smoac-slot run heavy 2 3600 -- env CARGO_BUILD_JOBS=2 BINARYEN_CORES=2 NO_COLOR=true trunk build --release
+smoac-slot run gate 3 3600 -- env CARGO_BUILD_JOBS=4 BINARYEN_CORES=2 bash build-page.sh
 ```
 
-Trunk writes `../../dist/c0host/`, hashes artifact names, and uses public URL `./`. Serve the
-directory over HTTP(S); relative paths allow relocation. No separate application binary is
+Trunk writes `../../dist/c0host/`, hashes artifact names, and uses public URL `./`.
+Build through `build-page.sh` (also called by `final-page.sh`): it scopes size optimization,
+fat LTO, one codegen unit and debug-info stripping to this page build. Panic recovery and
+all Cargo features stay upstream's; Trunk still runs `wasm-opt -Oz` from `index.html`.
+Serve the directory over HTTP(S); relative paths allow relocation. No separate application binary is
 maintained. The ordinary web build continues to write `dist/web` and exposes no page function
 without this feature. If `CRAFT_FONTS_DIR` names a missing checkout, unset it before building.
 Without craft-fonts the embedded Japanese fallback is absent; Japanese UI glyphs may be boxes,
@@ -215,7 +218,7 @@ All existing methods keep their upstream request/reply semantics inside the page
 Only `c0/main` receives commits; `main` stays the upstream mirror. Never push from this lane.
 See [PATCH-DEBT.md](PATCH-DEBT.md) for every upstream edit and the measured added-line ratchet,
 and [LANE-REPORT.md](LANE-REPORT.md) for test counts, Chromium evidence, sizes and assumptions.
-Use the slot wrapper and at most two Cargo jobs for every heavy command. Native feature tests
+Use the slot wrapper and the dispatched lane's Cargo job budget for every heavy command. Native feature tests
 exercise the parser/envelopes (K-41); wasm check and Trunk compile the browser half. UI tests use
 synthetic engine-generated documents, without adding any binary fixture or asset.
 
@@ -229,13 +232,14 @@ smoac-slot run heavy 2 3600 -- env CARGO_BUILD_JOBS=2 bash c0/pdfcraft-host/fina
 `native-checks.sh` runs format, native feature tests, the full UI/engine suites (including the
 host tests), and native clippy with development/test optimization and debug info disabled: the upstream
 default UI build exceeded this executor's one-hour per-command limit. Dependency-specific
-profile settings stay upstream's; release artifacts use the ordinary release profile. Both
-scripts run sequentially and cap Cargo jobs at two. Native gates use one test thread:
+profile settings stay upstream's; the page release profile is scoped by `build-page.sh`. Both
+scripts run sequentially; native checks use two Cargo jobs and final-page defaults to two
+unless the dispatched lane sets `CARGO_BUILD_JOBS`. Native gates use one test thread:
 two upstream form tests share a process-specific temporary path. They save logs in
 `/tmp/c0pdf-lane` (override with `C0PDF_LOG_DIR`). `node c0/pdfcraft-host/smoke.mjs` tests an
 existing `dist/c0host` using system Chromium, with no Node package installation required.
 `final-page.sh` runs format, wasm check, layers/assets, clock-probe build/clippy, the ordinary
-release page build and the complete Chromium smoke including the clock regression.
+size-tuned release page build and the complete Chromium smoke including the clock regression.
 
 The test-only clock probe isolates the exact old unsupported `SystemTime::now()` call from
 the app, catches its wasm trap, and checks the actual replacement helper against browser UTC.
