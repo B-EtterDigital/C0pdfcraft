@@ -197,3 +197,152 @@ Merge checkpoint: `63881dee8521078c71dc40a2b0fb325bdff695c4`.
 Trademark/CI cleanup: `12d9d69866c594d11ab398ba9035f8c7267c2ab3`.
 All commits use `C0 upstream sync <c0-upstream-sync@betterdigital.invalid>` on `fix`.
 The working tree is committed for controller retrieval over SSH; nothing was pushed.
+
+
+## Follow-up: merged-candidate package test repair (2026-10-28)
+
+Starting candidate: `183a04aeb680b72b6e496aabae2f16474c1201b8`, branch `fix`.
+This section records the later repair run; the blocked qualification above remains
+historical evidence. No push is authorized or performed.
+
+### Initial reproduction and ownership
+
+The requested `cargo test -p pdfcraft-ui-egui --no-fail-fast` exited 101 before
+executing tests. Full output: `/srv/smoac/build/sow-up1028/pdfcraft-tests.txt`.
+There were three E0063 compile failures in the fork-owned `c0_host_contract` suite:
+
+- `bytes_round_trip_preserves_dirty_revision_history_and_other_tabs`
+- `navigation_is_zero_based_validated_and_outline_aware`
+- `replacement_uses_existing_save_changes_cancel_discard_and_save`
+
+Cause: upstream added optional `left` and `top` destination coordinates to
+`pdfcraft_engine::Edit::AddBookmark`; the three fork fixtures still used the old
+initializer. All three are ours, not upstream-red. The fix supplies `left: None`
+and `top: None`, matching upstream's page-only bookmark fixtures and retaining the
+existing navigation, undo/redo and replacement assertions. Product behavior is
+unchanged. Cargo also resolved the web crate's existing `serde_json` dependency
+into `Cargo.lock`; that single generated bookkeeping line is retained.
+
+All Cargo commands use `CARGO_BUILD_JOBS=4`,
+`CARGO_TARGET_DIR=/srv/smoac/build/sow-fix-pdfcraft-target`, and
+`smoac-slot run gate 3 3600 --`. No cache was deleted. The initial target directory
+was absent, so the first run compiled dependencies from scratch. The host owns the
+actual gate capacity (reported as 4); its limits and holds were not modified.
+
+| Command / phase | Load before (1/5/15 min) | Load after | Result |
+|---|---|---|---|
+| Initial UI reproduction, 13:57–14:08 UTC | 11.03 / 11.82 / 13.28 | 8.48 / 14.16 / 14.62 | Exit 101; three fork fixture compile errors, zero tests executed; gate waited 125 s |
+| Contract suite `--test c0_host_contract --no-run`, 14:08–14:22 UTC | 10.02 / 14.30 / 14.66 | 13.79 / 14.41 / 14.94 | Passed; gate waited 804 s; compile finished in 4.44 s |
+
+The compiling fixture/lockfile unit was immediately committed as
+`c63f8e02b3a4a53355b37d1843b26c6870fa3b39` with the requested identity.
+Direct `rustfmt --check` and `git diff --check` passed for that change.
+The full UI rerun was initially queued ordinarily, then requeued using the slot
+manager's supported `SMOAC_SLOT_KIND=proof SMOAC_SLOT_REQUIRED=1` mode. Both the UI
+proof and a later web-check proof remained blocked behind active judging work;
+these requests were cancelled before Cargo started. Once load fell below 9,
+all remaining commands were combined in one ordinary gate session, which was
+admitted after 592 seconds. No host policy was changed. The cancelled queue logs
+are retained as `pdfcraft-tests-after-queue.txt` and
+`pdfcraft-final-checks-queue.txt` beside the original reproduction log.
+Neither admission kind bypassed host holds or load guards.
+
+
+### Runtime failure and second fix
+
+The first executable full UI run (`pdfcraft-tests-after.txt`) had **1,783 passed,
+1 failed, 11 ignored**. The complete runtime failure list was:
+
+- `c0_host_contract::community_switch_removes_home_about_menu_palette_and_command_links`
+
+Cause: the fork test still opened the old hamburger `Menu` and hovered `Help ⏵`.
+Upstream now renders a craft-menu bar; at this harness width the accessible
+menu title is `Help`. The test failed with “No nodes found” for `Menu`, before
+checking the menu contents. This is ours, not upstream-red.
+
+Fix: click `Help` directly and assert `About PdfCraft` is visible before checking
+that community links are absent. The positive assertion proves the menu actually
+opened, preserving meaningful coverage of the existing host filter. All Home,
+About, palette and direct-command refusal assertions remain. No production hook
+or upstream default behavior was changed. The full contract suite then passed
+**9/9** and the fix was immediately committed as
+`7cac08334a67f6b64acd0154f3fb7f4f8285e8f4` with the requested identity.
+
+### Final verification
+
+All commands below ran in the same admitted ordinary gate session, using the
+four-job limit and shared target directory stated above. Each command's full
+output, exit code, UTC timestamps, load and disk snapshots are in
+`/srv/smoac/build/sow-up1028/pdfcraft-<label>.{txt,exit,before,after}`.
+
+| Command | Result / pass count | Log label |
+|---|---|---|
+| `cargo test -p pdfcraft-ui-egui --no-fail-fast` (before menu fix) | Exit 101; 1,783 passed, 1 failed, 11 ignored | `tests-after` |
+| `cargo test -p pdfcraft-web` | Exit 0; 0 tests (default native binary) | `web-tests` |
+| `cargo check --target wasm32-unknown-unknown -p pdfcraft-web` | Exit 0 | `web-wasm` |
+| `cargo test -p pdfcraft-web --features page-control` | Exit 0; 2 passed | `web-page-control-tests` |
+| `cargo check --target wasm32-unknown-unknown -p pdfcraft-web --features page-control` | Exit 0 | `web-page-control-wasm` |
+| `cargo fmt --all --check` | Exit 0 | `fmt` |
+| `cargo clippy -p pdfcraft-ui-egui -p pdfcraft-web --all-targets --features page-control -- -D warnings` | Exit 0 | `clippy` |
+| `cargo xtask layers` | Exit 0; 37 crates, no violations | `layers` |
+| `cargo xtask assets` | Exit 1; eight stale trademark inventory entries, detailed below | `assets` |
+| `cargo test -p pdfcraft-ui-egui --test c0_host_contract` | Exit 0; 9 passed | `contract-tests` |
+| `cargo test -p pdfcraft-ui-egui --no-fail-fast` (final) | **Exit 0; 1,784 passed, 0 failed, 11 ignored** | `tests-final` |
+
+Final UI counts by target: library 577 passed / 1 ignored; `c0_host_contract`
+9 passed; `c0_tool_modes` 10 passed; `c0_web_fixes` 2 passed; upstream `it`
+1,183 passed / 10 ignored; performance 3 passed; doc-tests 0. The ignored tests
+retain upstream's ignore annotations. Wasm checks passed with existing
+conditional-compilation warnings (render: 4, UI: 6); no wasm warning-clean claim
+is made. Native scoped clippy passed with warnings denied.
+
+**Upstream-red test list: empty.** No upstream test failed in either executable
+full package run, so no pure-upstream worktree comparison was necessary. All
+observed compile/runtime failures belonged to the fork contract suite and were
+fixed. No test was disabled, ignored or removed by this repair.
+
+### Load and disk evidence for the admitted follow-up session
+
+Loads below are the 1/5/15-minute averages immediately before/after each command.
+The exact UTC intervals and disk snapshots are retained in the evidence files.
+
+| Log label | UTC interval | Load before | Load after |
+|---|---|---|---|
+| `tests-after` | 15:06:38–15:07:12 | 12.83 / 13.41 / 15.15 | 16.09 / 14.15 / 15.33 |
+| `web-tests` | 15:07:12–15:08:02 | 16.09 / 14.15 / 15.33 | 18.07 / 15.00 / 15.56 |
+| `web-wasm` | 15:08:02–15:09:13 | 18.07 / 15.00 / 15.56 | 16.26 / 15.27 / 15.62 |
+| `web-page-control-tests` | 15:09:14–15:11:27 | 16.26 / 15.27 / 15.62 | 18.24 / 16.26 / 15.92 |
+| `web-page-control-wasm` | 15:11:27–15:11:33 | 18.24 / 16.26 / 15.92 | 17.50 / 16.14 / 15.88 |
+| `fmt` | 15:11:33–15:11:37 | 17.50 / 16.14 / 15.88 | 16.90 / 16.03 / 15.85 |
+| `clippy` | 15:11:37–15:12:45 | 16.90 / 16.03 / 15.85 | 15.04 / 15.71 / 15.75 |
+| `layers` | 15:12:45–15:13:12 | 15.04 / 15.71 / 15.75 | 14.13 / 15.46 / 15.67 |
+| `assets` | 15:13:12–15:13:12 | 14.13 / 15.46 / 15.67 | 14.13 / 15.46 / 15.67 |
+| `contract-tests` | 15:13:12–15:13:15 | 14.13 / 15.46 / 15.67 | 14.13 / 15.46 / 15.67 |
+| `tests-final` | 15:13:15–15:13:46 | 14.13 / 15.46 / 15.67 | 12.88 / 15.06 / 15.53 |
+
+Disk usage during these admitted commands stayed at 83–84%; the 88% stop
+threshold was not crossed. During the preceding queue waits it ranged from
+81–86%. No cache or other worker's files were deleted by this lane.
+
+### Remaining limitation and handoff
+
+The extra asset audit confirms the limitation already documented before this
+repair: five removed upstream trademark assets are still listed in
+`ATTRIBUTION.toml`, and the three blank SVG placeholders do not match the old
+trademark hashes. The five missing files are `artcraft-logo-white.png`,
+`artcraft-logo.png`, `artcraft-mark-black.png`, `artcraft-mark-black.svg` and
+`artcraft-mark.png`, all under `docs/brand/`; the three mismatched SVGs are
+`artcraft-logo-white.svg`, `artcraft-logo.svg` and `artcraft-mark.svg` in that
+directory. This is an existing fork inventory issue, not an upstream-red test.
+No assets were added or restored, and asset metadata was not changed by this
+package-test repair. The combined diagnostic script exits 1 because it retains
+both the earlier failed UI attempt and this asset audit; individual final test
+and wasm exit records above are 0.
+
+Patch-debt total after Cargo's one generated lockfile line is **64**, below the
+65-line ratchet; both Rust repairs are confined to a fork-owned test file.
+This follows the SMA module-local ownership rule and preserves the small
+upstream hook surface. No engine, UI hook, dependency version, ignored-test list,
+CI, branding asset or release artifact changed. No push was performed.
+The final report commit contains documentation only; the final full package
+run tested the code committed at `7cac08334a67f6b64acd0154f3fb7f4f8285e8f4`.
