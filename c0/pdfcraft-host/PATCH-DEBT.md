@@ -1,39 +1,60 @@
 # PdfCraft upstream patch debt
 
-Only `c0/main` receives commits. `main` remains the upstream mirror. Most host code is in new
-`c0_*.rs`, `page_control*`, `theme/host.rs` and `tests/c0_*.rs` files, and this page directory.
-The table counts **added** lines in modified upstream files, including replacements. Deleted
-lines are still patch debt and are described below; they do not contribute to the requested ratchet.
+The pinned upstream is `5af102765222c8220df0f9eaa27bfa3bcf481ead`. The pre-merge
+`origin/c0/main` baseline was **65 added lines**. New fork-owned files do not count.
+The table counts added lines, including replacements; deletions are described separately.
+All host switches default to upstream behaviour. No engine file is modified.
 
-| File | Lines | What | Why | Offered upstream |
-|---|---:|---|---|---|
-| `Cargo.lock` | 1 | Record the web binary's direct JSON dependency | Reproducible feature builds | no, dependency bookkeeping |
-| `apps/pdfcraft-web/Cargo.toml` | 4 | Feature and JSON dependency; feature enables native window backends | Opt-in bridge; native feature tests (K-41) | no, host feature |
-| `apps/pdfcraft-web/src/main.rs` | 9 | Register runner and attach bridge under feature | Same binary and existing startup; parent bridge unchanged | no, host transport |
-| `crates/ui-egui/src/canvas.rs` | 2 (2 replaced) | The call to `quick_bar` goes through `c0_host::strip::show` (hidden, floating, grip); the strip's `ui.vertical` becomes `ui.scope_builder(c0_host::strip::columns(..))` (one or two columns) | Tool-strip modes; defaults draw exactly what upstream drew | no, host policy |
-| `crates/ui-egui/src/chrome.rs` | 5 | Gate Discord button | Remove chrome promotion when requested | no, host policy |
-| `crates/ui-egui/src/combine_ui.rs` | 1 | Use browser-safe clock in relative dates | `SystemTime::now()` panics on wasm32-unknown-unknown | **yes, as is** |
-| `crates/ui-egui/src/commands.rs` | 6 | Gate community command execution and menu rows | Hide links consistently and refuse hidden actions | no, host policy |
-| `crates/ui-egui/src/control.rs` | 5 | Host trait method, forwarding implementation and one dispatch arm for `c0.*` and `ui.render` | Reuse the existing queue | no, host API |
-| `crates/ui-egui/src/dialogs.rs` | 4 | Gate About mark; delegate footer to new module | Retain name, contributors and licence without promotions | no, host policy |
-| `crates/ui-egui/src/docking.rs` | 5 | Render projection and divider path translation (also while the right dock is folded) | Hide Tools without overwriting saved docking geometry | no, host policy |
-| `crates/ui-egui/src/editing.rs` | 1 | Select browser download MIME by file extension | Exports other than PDF must not be labelled application/pdf | **yes, as is** |
-| `crates/ui-egui/src/home.rs` | 4 | Early Home gate and delegate community card | Empty pasteboard; no hidden-card space | no, host policy |
-| `crates/ui-egui/src/lib.rs` | 13 | Register modules/unsaved Chrome, initialize session, picker hook, replacement poll, and the title/app-bar/rail gates as one `c0_host::when` line each (9 lines before the tool-mode lane), plus the Read-mode side panel's fold gate | Host integration plus browser session wall clock | clock initialization: **yes, as is**; remaining lines: no |
-| `crates/ui-egui/src/palette.rs` | 3 | Filter community commands | Palette cannot reintroduce hidden promotions | no, host policy |
-| `crates/ui-egui/src/theme.rs` | 2 | New override module and one token resolution line | Persistent runtime overrides across theme changes | no, host palette |
+| File | Added lines | Hook / reason |
+|---|---:|---|
+| `apps/pdfcraft-web/Cargo.toml` | 4 | Opt-in page-control feature, native backends for feature tests, JSON dependency |
+| `apps/pdfcraft-web/src/main.rs` | 9 | Register runner and attach the opt-in bridge |
+| `crates/ui-egui/src/app.rs` | 5 | Browser session clock, default Chrome, replacement polling and title/tab/app-bar gates (moved from lib.rs) |
+| `crates/ui-egui/src/app/files.rs` | 4 | Opt-in browser picker hook plus crate visibility for finish_open after upstream moved it into a private submodule |
+| `crates/ui-egui/src/canvas.rs` | 1 | Delegate the quick-bar visibility and position to c0_host |
+| `crates/ui-egui/src/canvas/bars.rs` | 1 | Delegate the strip column layout (moved from canvas.rs) |
+| `crates/ui-egui/src/chrome.rs` | 5 | Gate the Discord button |
+| `crates/ui-egui/src/commands.rs` | 3 | Refuse community commands when links are hidden |
+| `crates/ui-egui/src/control.rs` | 3 | Default host-extension method for upstream test hosts |
+| `crates/ui-egui/src/control/host.rs` | 3 | Forward host requests to c0_host (moved from control.rs) |
+| `crates/ui-egui/src/control/requests.rs` | 1 | Dispatch c0.* and ui.render over the existing queue (moved from control.rs) |
+| `crates/ui-egui/src/dialogs.rs` | 4 | Gate About mark and delegate community footer |
+| `crates/ui-egui/src/dialogs/palette.rs` | 3 | Filter community commands (moved from palette.rs) |
+| `crates/ui-egui/src/editing/save.rs` | 1 | Select browser download MIME by file extension (moved from editing.rs) |
+| `crates/ui-egui/src/home.rs` | 4 | Gate Home and delegate the upstream dismissible community card |
+| `crates/ui-egui/src/lib.rs` | 3 | Register host/browser modules and transient Chrome field |
+| `crates/ui-egui/src/menus.rs` | 1 | Filter community menu rows in the new craft-menu builder (moved from commands.rs) |
+| `crates/ui-egui/src/panels/side_panels.rs` | 2 | Project visible panes and gate rail without changing saved widths/open states (replaces docking.rs and Read-mode gate) |
+| `crates/ui-egui/src/theme.rs` | 2 | Register override module and resolve tokens |
+| `crates/ui-egui/src/workflows/combine_ui/parts.rs` | 1 | Browser-safe relative-date clock (moved from deleted combine_ui.rs) |
 
-Total: 65
+Total: 60
 
 Ratchet: 65
 
-Measured on the tool-mode commit (was 68 at `e4ee673190f380a0a7484efa01e66891aa914dd7`; the lib.rs gates were compacted to pay for the strip and fold lines):
+Measured using `git diff --numstat --diff-filter=M 5af102765222 HEAD -- . ':!c0'`.
+Whole-file trademark/CI removals add no lines. The three one-line blank SVG
+include placeholders are included in the total after the separate hygiene commit.
 
-```sh
-git diff --numstat --diff-filter=M main c0/main -- . ':!c0'
-```
+Deleted upstream blocks in `home.rs` and `dialogs.rs` live in `c0_host/community.rs`;
+default rendering includes upstream's new close button. The browser clock and MIME
+corrections remain in `c0_web.rs` / `c0_clock.rs` and are suitable upstream as is.
+All other entries are fork-specific host policy/API and have not been offered upstream.
 
-The added column is summed. New files do not count. `home.rs` and `dialogs.rs` also delete the
-upstream community blocks moved into `c0_host/community.rs`; their default rendering is retained.
-The three browser corrections live in new `c0_web.rs` / `c0_clock.rs` for this fork; an upstream submission can
-place the same clock/MIME helpers in upstream's preferred modules. No engine file is modified.
+## Retired paths and previously missing conflicts
+
+- `crates/ui-egui/src/combine_ui.rs`: deleted upstream; clock hook moved to
+  `workflows/combine_ui/parts.rs`. Never resurrected.
+- `crates/ui-egui/src/docking.rs`: deleted upstream; visibility/folding hooks moved to
+  `panels/side_panels.rs`. Upstream's flat PaneHost list has no split paths to translate;
+  the obsolete fork split-path helper is removed, with retained-geometry/fold tests ported
+  to the new saved side-panel state. No host switch was dropped.
+- `crates/ui-egui/src/editing.rs`: download implementation moved to `editing/save.rs`.
+- `.github/workflows/ci.yml`, `freebsd.yml`, `packaging-lint.yml`, `release.yml`,
+  `windows-arm64.yml`: all five modify/delete conflicts were missing from the old table.
+  These are whole-file fork exclusions (zero added hook lines). Upstream versions were
+  accepted for the merge, then removed in the required separate hygiene commit.
+
+The moved control trait needs a default error body for upstream's independent fake hosts:
+this raises its portion from 5 to 7 lines. Savings from the new pane renderer and menu
+builder keep the overall hook debt below the old ratchet; no exception is requested.

@@ -4,11 +4,9 @@ pub(crate) mod community;
 mod dock;
 pub mod files;
 mod inspect;
-mod panels;
 mod render;
 mod settings;
 pub(crate) mod strip;
-pub(crate) use panels::split_path;
 
 use crate::PdfCraftApp;
 use serde_json::{Value, json};
@@ -85,19 +83,10 @@ pub(crate) fn when(on: bool, draw: impl FnOnce()) {
     }
 }
 
-/// The rendered dock differs from the saved one: Tools hidden by the host, or the right dock folded.
-pub(crate) fn trims_dock(app: &PdfCraftApp) -> bool {
-    !app.chrome.tools_panel || app.chrome.right_dock_collapsed
-}
-
-/// Project host visibility into the rendered layout, retaining the saved docking tree.
-pub(crate) fn project_panels(app: &PdfCraftApp, layout: &mut craft_ui::docking::Layout<crate::docking::Panel>) {
-    use crate::docking::Panel;
-    use craft_ui::docking::Action;
-    if !app.chrome.tools_panel && layout.contains(&Panel::Tools) {
-        let _ = layout.apply(Action::Close { panel: Panel::Tools });
-    }
-    if app.chrome.right_dock_collapsed && layout.contains(&Panel::Inspector) {
-        let _ = layout.apply(Action::Close { panel: Panel::Inspector });
+/// Filter the rendered panes without changing the saved open states or widths.
+pub(crate) fn pane_visible(app: &PdfCraftApp, pane: crate::side_panels::Pane) -> bool {
+    match pane {
+        crate::side_panels::Pane::Tools => app.chrome.tools_panel,
+        crate::side_panels::Pane::Side => !app.chrome.right_dock_collapsed,
     }
 }

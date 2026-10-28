@@ -12,7 +12,7 @@ pub struct Report {
 }
 
 fn store() -> egui::Id {
-    egui::Id::new("pdfcraft-host-theme")
+    egui::Id::unique("pdfcraft-host-theme")
 }
 
 pub fn set(ctx: &egui::Context, value: &Value) -> Result<Report, String> {

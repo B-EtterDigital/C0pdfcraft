@@ -1,6 +1,5 @@
-//! The right dock's fold. The rendered dock drops the Inspector (see `project_panels`) and the
-//! Read-mode side panel is gated in `lib.rs`; the rail keeps its icons. Pressing one is the only
-//! way the right pane changes while folded, so a change of `app.right` unfolds the dock.
+//! The right pane folds without changing saved widths or the selected panel.
+//! A rail selection changes `app.right` and unfolds it on the next logic pass.
 use crate::PdfCraftApp;
 
 /// Once per logic pass.

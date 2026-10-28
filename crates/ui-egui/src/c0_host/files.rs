@@ -23,13 +23,13 @@ struct Replacement {
 }
 
 fn replacement_id() -> egui::Id {
-    egui::Id::new("pdfcraft-host-replacement")
+    egui::Id::unique("pdfcraft-host-replacement")
 }
 fn picker_id() -> egui::Id {
-    egui::Id::new("pdfcraft-host-picker")
+    egui::Id::unique("pdfcraft-host-picker")
 }
 fn enabled_id() -> egui::Id {
-    egui::Id::new("pdfcraft-page-control")
+    egui::Id::unique("pdfcraft-page-control")
 }
 
 pub fn enable_page(ctx: &egui::Context) {
