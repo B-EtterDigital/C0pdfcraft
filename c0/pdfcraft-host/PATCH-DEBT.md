@@ -20,7 +20,7 @@ All host switches default to upstream behaviour. No engine file is modified.
 | `crates/ui-egui/src/control.rs` | 3 | Default host-extension method for upstream test hosts |
 | `crates/ui-egui/src/control/host.rs` | 3 | Forward host requests to c0_host (moved from control.rs) |
 | `crates/ui-egui/src/control/requests.rs` | 1 | Dispatch c0.* and ui.render over the existing queue (moved from control.rs) |
-| `crates/ui-egui/src/dialogs.rs` | 4 | Gate About mark and delegate community footer |
+| `crates/ui-egui/src/dialogs.rs` | 6 | Gate About mark and delegate community footer; pass the app into upstream's new `dialog_about` (call site and signature, 2, forced by the 20261030 pull) |
 | `crates/ui-egui/src/dialogs/palette.rs` | 3 | Filter community commands (moved from palette.rs) |
 | `crates/ui-egui/src/editing/save.rs` | 1 | Select browser download MIME by file extension (moved from editing.rs) |
 | `crates/ui-egui/src/home.rs` | 4 | Gate Home and delegate the upstream dismissible community card |
@@ -31,11 +31,11 @@ All host switches default to upstream behaviour. No engine file is modified.
 | `crates/ui-egui/src/workflows/combine_ui/parts.rs` | 1 | Browser-safe relative-date clock (moved from deleted combine_ui.rs) |
 | `crates/ui-egui/src/widgets.rs` | 1 | Re-export fork-owned empty layout slots instead of embedding trademark placeholders |
 
-Total: 63
+Total: 65
 
-Ratchet: 65
+Ratchet: 65 (63 before the 20261030 pull; upstream moved the About tab into `dialog_about`, which had no app handle)
 
-Measured using `git diff --numstat --diff-filter=M 5af102765222 HEAD -- . ':!c0'`.
+Measured using `git diff --numstat --diff-filter=M c735fb7da552 HEAD -- . ':!c0'`.
 Whole-file trademark/CI removals add no lines. The size lane replaces three blank
 SVG placeholders with one widget re-export; the empty layout implementations live
 in the fork-owned `c0_host/brand.rs`. It also deletes the obsolete trademark asset
