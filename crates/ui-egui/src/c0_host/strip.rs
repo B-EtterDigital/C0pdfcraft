@@ -53,7 +53,7 @@ pub(crate) fn columns(ui: &Ui, app: &PdfCraftApp) -> UiBuilder {
 }
 
 /// Draw the strip the way the switches say. `draw` is upstream's `quick_bar`.
-pub(crate) fn show(app: &mut PdfCraftApp, area: Rect, ui: &mut Ui, draw: fn(&mut PdfCraftApp, Rect, &mut Ui)) {
+pub(crate) fn show(app: &mut PdfCraftApp, area: Rect, ui: &mut Ui, draw: impl FnOnce(&mut PdfCraftApp, Rect, &mut Ui)) {
     if !app.chrome.toolbar {
         return;
     }

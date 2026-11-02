@@ -132,13 +132,17 @@ fn double_puts_the_strip_in_two_columns_and_back() {
     let (mut h, client) = harness(1, |_| {});
     assert_eq!(columns_of(&h), 1);
     let first = h.get_by_label("Select (V)").rect().min;
-    let single_height = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).unwrap().height();
+    let single = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).unwrap();
+    let single_height = single.height();
     set(&mut h, &client, "toolbar_double", json!(true));
     h.run_steps(3);
     assert_eq!(columns_of(&h), 2, "buttons wrap into a second column");
     let bar = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).unwrap();
     assert!(bar.height() < single_height, "the two columns are shorter than one");
-    assert_eq!(h.get_by_label("Select (V)").rect().min, first, "the first button stays where it was");
+    // Upstream centres the bar in the page margin, so a wider bar moves left by half the extra width.
+    let now = h.get_by_label("Select (V)").rect().min;
+    assert_eq!(now.y, first.y, "the first button stays in its row");
+    assert!((now.x - first.x).abs() <= (bar.width() - single.width()).abs() / 2.0 + 1.0, "{first:?} -> {now:?}");
     assert_eq!(panes(&mut h, &client)["strip"]["columns"], 2);
     set(&mut h, &client, "toolbar_double", json!(false));
     h.run_steps(3);

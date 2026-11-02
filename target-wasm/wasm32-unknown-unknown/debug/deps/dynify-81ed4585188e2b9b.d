@@ -1,0 +1,14 @@
+/srv/smoac/build/pdf-fix-20261103/target-wasm/wasm32-unknown-unknown/debug/deps/dynify-81ed4585188e2b9b.d: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/utils.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/closure.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/constructor.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/container.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/function.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/receiver.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/lib.md /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/dynify.md /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/../README.md
+
+/srv/smoac/build/pdf-fix-20261103/target-wasm/wasm32-unknown-unknown/debug/deps/libdynify-81ed4585188e2b9b.rmeta: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/utils.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/closure.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/constructor.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/container.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/function.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/receiver.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/lib.md /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/dynify.md /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/../README.md
+
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/lib.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/utils.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/closure.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/constructor.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/container.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/function.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/receiver.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/lib.md:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/dynify.md:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/dynify-0.1.2/src/../README.md:

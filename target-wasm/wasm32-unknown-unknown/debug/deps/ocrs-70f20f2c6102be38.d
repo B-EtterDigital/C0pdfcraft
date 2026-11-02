@@ -1,0 +1,15 @@
+/srv/smoac/build/pdf-fix-20261103/target-wasm/wasm32-unknown-unknown/debug/deps/ocrs-70f20f2c6102be38.d: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/detection.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/errors.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/geom_util.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/layout_analysis.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/layout_analysis/empty_rects.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/log.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/model.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/preprocess.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/recognition.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/text_items.rs
+
+/srv/smoac/build/pdf-fix-20261103/target-wasm/wasm32-unknown-unknown/debug/deps/libocrs-70f20f2c6102be38.rmeta: /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/lib.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/detection.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/errors.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/geom_util.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/layout_analysis.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/layout_analysis/empty_rects.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/log.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/model.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/preprocess.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/recognition.rs /root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/text_items.rs
+
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/lib.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/detection.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/errors.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/geom_util.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/layout_analysis.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/layout_analysis/empty_rects.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/log.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/model.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/preprocess.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/recognition.rs:
+/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/ocrs-0.13.1/src/text_items.rs:
