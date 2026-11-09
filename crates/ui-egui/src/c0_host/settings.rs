@@ -42,6 +42,9 @@ pub(super) fn set(app: &mut PdfCraftApp, ctx: &egui::Context, params: &Value) ->
             invalid.push(format!("panels.{key}"));
         }
     }
+    if applied.iter().any(|k| k == "panels.toolbar_floating") {
+        super::strip::place(app);
+    }
     app.chrome.dock_seen = app.right;
     ctx.request_repaint();
     Ok(json!({"applied": applied, "unknown": unknown, "invalid": invalid}))

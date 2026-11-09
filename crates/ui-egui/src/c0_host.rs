@@ -51,7 +51,7 @@ impl Default for Chrome {
             tools_panel: true,
             toolbar: true,
             toolbar_double: false,
-            toolbar_floating: false,
+            toolbar_floating: true,
             right_dock_collapsed: false,
             toolbar_pos: None,
             dock_seen: None,

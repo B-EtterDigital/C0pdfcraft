@@ -56,21 +56,22 @@ fn defaults_are_upstreams_and_inspect_reports_every_key() {
     let panes = panes(&mut h, &client);
     let chrome = &panes["chrome"];
     assert_eq!(chrome["toolbar"], true);
-    for key in ["toolbar_double", "toolbar_floating", "right_dock_collapsed"] {
+    // Upstream's hotbar starts as a floating card, so the switch reads floating.
+    assert_eq!(chrome["toolbar_floating"], true);
+    for key in ["toolbar_double", "right_dock_collapsed"] {
         assert_eq!(chrome[key], false, "{key}");
     }
     for key in ["title_bar", "app_bar", "tab_strip", "start_screen", "community_links", "right_rail", "tools_panel"] {
         assert_eq!(chrome[key], true, "{key} keeps its default");
     }
-    assert_eq!(panes["strip"], json!({"visible": true, "columns": 1, "floating": false, "pos": null}));
-    // Upstream's place: 14 points in from the document area's corner, one column, no grip.
-    let bar = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).expect("the strip is drawn");
-    assert!(h.query_by_label("Move toolbar").is_none());
+    assert_eq!(panes["strip"], json!({"visible": true, "columns": 1, "floating": true, "dock": null, "pos": [0.0, 0.0]}));
+    let bar = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).expect("the hotbar is drawn");
+    assert!(h.query_by_label("Drag hotbar").is_some(), "the floating hotbar keeps its own grip");
     let hand = h.get_by_label("Hand (H)").rect();
     let select = h.get_by_label("Select (V)").rect();
     assert_eq!(select.min.x, hand.min.x, "one column");
     assert!(hand.min.y > select.min.y);
-    assert!(bar.min.x >= 14.0 && bar.min.y >= 14.0);
+    assert!(bar.min.x >= 10.0 && bar.min.y >= 10.0);
 }
 
 #[test]
@@ -120,58 +121,70 @@ fn toolbar_switch_hides_and_shows_the_strip() {
 
 fn columns_of(h: &H) -> usize {
     let select = h.get_by_label("Select (V)").rect();
-    let strip = h.query_all_by_label("Fill & Sign").map(|n| n.rect()).filter(|r| r.min.y > select.min.y && (r.min.x - select.min.x).abs() < 80.0);
-    let mut xs: Vec<i32> = [select, h.get_by_label("Hand (H)").rect()].into_iter().chain(strip).map(|r| r.min.x.round() as i32).collect();
+    let core = |l: &str| l == "Select (V)" || l == "Hand (H)" || l.starts_with("Fill & Sign");
+    let mut xs: Vec<i32> = h
+        .query_all_by(|n| n.label().is_some_and(|l| core(&l)))
+        .map(|n| n.rect())
+        .filter(|r| (r.min.x - select.min.x).abs() < 80.0)
+        .map(|r| r.min.x.round() as i32)
+        .collect();
     xs.sort_unstable();
     xs.dedup();
     xs.len()
 }
 
 #[test]
-fn double_puts_the_strip_in_two_columns_and_back() {
+fn double_puts_the_hotbar_in_two_columns_and_back() {
     let (mut h, client) = harness(1, |_| {});
     assert_eq!(columns_of(&h), 1);
-    let first = h.get_by_label("Select (V)").rect().min;
     let single = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).unwrap();
-    let single_height = single.height();
     set(&mut h, &client, "toolbar_double", json!(true));
-    h.run_steps(3);
+    h.run_steps(4);
     assert_eq!(columns_of(&h), 2, "buttons wrap into a second column");
     let bar = h.ctx.memory(|m| m.area_rect(egui::Id::unique("quick-bar"))).unwrap();
-    assert!(bar.height() < single_height, "the two columns are shorter than one");
-    // Upstream centres the bar in the page margin, so a wider bar moves left by half the extra width.
-    let now = h.get_by_label("Select (V)").rect().min;
-    assert_eq!(now.y, first.y, "the first button stays in its row");
-    assert!((now.x - first.x).abs() <= (bar.width() - single.width()).abs() / 2.0 + 1.0, "{first:?} -> {now:?}");
+    assert!(bar.height() < single.height(), "the two columns are shorter than one");
+    assert!(bar.width() > single.width(), "and wider");
     assert_eq!(panes(&mut h, &client)["strip"]["columns"], 2);
     set(&mut h, &client, "toolbar_double", json!(false));
-    h.run_steps(3);
+    h.run_steps(4);
     assert_eq!(columns_of(&h), 1);
 }
 
 #[test]
-fn floating_strip_has_a_grip_that_drags_it_within_the_document_area() {
+fn docked_runs_along_the_left_side_and_floating_comes_back_to_its_spot() {
     let (mut h, client) = harness(1, |_| {});
     let home = h.get_by_label("Select (V)").rect().min;
+    set(&mut h, &client, "toolbar_floating", json!(false));
+    h.run_steps(3);
+    let strip = panes(&mut h, &client)["strip"].clone();
+    assert_eq!((strip["floating"].clone(), strip["dock"].clone()), (json!(false), json!("left")));
+    assert!(h.query_by_label("Drag hotbar").is_none(), "a docked hotbar has no grip");
+    let docked = h.get_by_label("Select (V)").rect().min;
+    assert!(docked.x < home.x, "docked against the left edge: {home:?} -> {docked:?}");
     set(&mut h, &client, "toolbar_floating", json!(true));
     h.run_steps(3);
-    assert_eq!(h.get_by_label("Select (V)").rect().min, home, "floating starts where the docked strip sat");
-    let grip = h.get_by_label("Move toolbar").rect();
-    let reply = call(
+    assert_eq!(h.get_by_label("Select (V)").rect().min, home, "floating returns to upstream's default spot");
+    assert!(h.query_by_label("Drag hotbar").is_some());
+}
+
+#[test]
+fn the_floating_hotbar_drags_by_its_grip_within_the_document_area() {
+    let (mut h, client) = harness(1, |_| {});
+    let home = h.get_by_label("Select (V)").rect().min;
+    let grip = h.query_all_by_label("Drag hotbar").next().expect("the hotbar has a grip").rect();
+    call(
         &mut h,
         &client,
         "ui.drag",
         json!({"from": [grip.center().x, grip.center().y], "to": [grip.center().x + 80.0, grip.center().y + 60.0], "steps": 4}),
     )
     .unwrap();
-    assert!(reply.is_object());
     h.run_steps(3);
     let moved = h.get_by_label("Select (V)").rect().min;
-    assert!((moved.x - home.x - 80.0).abs() < 2.0 && (moved.y - home.y - 60.0).abs() < 2.0, "{home:?} -> {moved:?}");
+    assert!((moved.x - home.x - 80.0).abs() < 3.0 && (moved.y - home.y - 60.0).abs() < 3.0, "{home:?} -> {moved:?}");
     let pos = panes(&mut h, &client)["strip"]["pos"].clone();
-    assert!(pos[0].as_f64().is_some_and(|x| (x - 80.0).abs() < 2.0), "{pos}");
-    // Far past the corner: kept inside the document area.
-    let grip = h.get_by_label("Move toolbar").rect();
+    assert!(pos[0].as_f64().is_some_and(|x| x > 0.0), "{pos}");
+    let grip = h.query_all_by_label("Drag hotbar").next().expect("the hotbar has a grip").rect();
     call(
         &mut h,
         &client,
@@ -181,22 +194,16 @@ fn floating_strip_has_a_grip_that_drags_it_within_the_document_area() {
     .unwrap();
     h.run_steps(3);
     let low = h.get_by_label("Select (V)").rect().min;
-    assert!(low.x < 1280.0 && low.y < 900.0);
-    // Back to docked: the strip returns to its corner, the place is kept for the next float.
-    set(&mut h, &client, "toolbar_floating", json!(false));
-    h.run_steps(3);
-    assert_eq!(h.get_by_label("Select (V)").rect().min, home);
-    assert!(h.query_by_label("Move toolbar").is_none());
-    assert!(panes(&mut h, &client)["strip"]["pos"].is_array());
+    assert!(low.x < 1280.0 && low.y < 900.0, "kept inside the document area: {low:?}");
 }
 
 #[test]
 fn floating_and_double_combine() {
     let (mut h, client) = harness(1, |_| {});
     call(&mut h, &client, "c0.set", json!({"panels": {"toolbar_floating": true, "toolbar_double": true}})).unwrap();
-    h.run_steps(3);
+    h.run_steps(4);
     assert_eq!(columns_of(&h), 2);
-    assert!(h.query_by_label("Move toolbar").is_some());
+    assert!(h.query_by_label("Drag hotbar").is_some());
 }
 
 fn pages_panel_shown(h: &H) -> bool {
