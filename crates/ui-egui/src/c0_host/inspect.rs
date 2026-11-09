@@ -42,7 +42,8 @@ pub(super) fn inspect(app: &PdfCraftApp, ctx: &egui::Context) -> Value {
         "panes": {"chrome": app.chrome, "tools": app.chrome.tools_panel && app.left_open, "strip": super::strip::state(app),
             "left": if app.left_open {Some(format!("{:?}", app.left))} else {None}, "right": app.right.map(|p| format!("{p:?}"))},
         "pendingReplacement": super::files::replacement_pending(ctx), "fileDialog": super::files::picker_pending(ctx),
-        "needsConfirmation": app.close_request.is_some()
+        "needsConfirmation": app.close_request.is_some(),
+        "tool": super::tools::active(app)
     })
 }
 

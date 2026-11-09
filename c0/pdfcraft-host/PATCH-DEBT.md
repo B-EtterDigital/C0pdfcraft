@@ -31,6 +31,9 @@ All host switches default to upstream behaviour. No engine file is modified.
 
 Total: 65
 
+The tool list and opening (`c0.tools`, `c0.openTool`, `inspect.tool`) live in the fork-owned
+`crates/ui-egui/src/c0_host/tools.rs` and add no upstream lines; the total is unchanged.
+
 Ratchet: 65 (2026-11-09: upstream now carries serde_json; the quick-bar strip moved onto upstream's hotbar: canvas.rs 1 -> 3, hotbar.rs +3, bars.rs and the attribution/lock lines gone; 63 before the 20261030 pull; upstream moved the About tab into `dialog_about`, which had no app handle)
 
 Measured using `git diff --numstat --diff-filter=M c735fb7da552 HEAD -- . ':!c0'`.

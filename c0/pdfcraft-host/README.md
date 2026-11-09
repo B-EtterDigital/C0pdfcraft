@@ -67,6 +67,8 @@ and retains the upstream five-second timeout. No server or network listener is i
 | `c0.newDocument` | `{template?: "blank"}`; empty string also accepted | Same replacement result; creates upstream's one-page US Letter PDF |
 | `c0.cancelFileDialog` | `{}` | `{cancelled:boolean}` |
 | `c0.set` | `{themeTokens?,panels?}` | `{applied:string[],unknown:string[],invalid:string[]}` |
+| `c0.tools` | `{}` | `{tools:[{id,label,group?,icon,enabled,active}],active}`: every All tools entry in panel order, View more included; `id` is the catalogue id (`compress`), `label` as shown, `group` the expanded view's category, `icon` the Lucide name, `enabled` always true (the panel greys no group row), `active` the tool open now, `active` at top level its id or null |
+| `c0.openTool` | `{id}` | `{opened:id}`: the panel row's own code path; works with `tools_panel` hidden; unknown or missing id, or a dialog open, fails with `{ok:false,error}` and changes nothing |
 
 `c0.inspect` exposes:
 
@@ -82,7 +84,8 @@ and retains the upstream five-second timeout. No server or network listener is i
     "toolbar_floating":false,"right_dock_collapsed":false,"toolbar_pos":null},
     "strip":{"visible":true,"columns":1,"floating":false,"pos":null},
     "tools":true,"left":"AllTools","right":null},
-  "pendingReplacement":false, "fileDialog":false, "needsConfirmation":false
+  "pendingReplacement":false, "fileDialog":false, "needsConfirmation":false,
+  "tool":null
 }
 ```
 
@@ -134,7 +137,7 @@ unknown keys as unknown and known non-booleans as invalid. Repeated values are i
 | `start_screen` | PdfCraft Home contents; false leaves an empty pasteboard |
 | `community_links` | Community card, Discord chrome action, Help links, palette promotions and About marks/links; About retains PdfCraft, contributors and licence |
 | `right_rail` | Page navigation/tool rail; panes remain available through commands |
-| `tools_panel` | Hides Tools in the rendered dock projection, retaining the saved layout |
+| `tools_panel` | Hides Tools in the rendered dock projection, retaining the saved layout; the host lists and opens tools with `c0.tools` and `c0.openTool`, which work either way |
 | `toolbar` | The quick-action strip (select, hand, comment, fill and sign); default true |
 | `toolbar_double` | The strip in two columns; default false |
 | `toolbar_floating` | The strip as a palette with a grip, dragged within the document area; default false |

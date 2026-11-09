@@ -8,6 +8,7 @@ mod inspect;
 mod render;
 mod settings;
 pub(crate) mod strip;
+mod tools;
 
 use crate::PdfCraftApp;
 use serde_json::{Value, json};
@@ -71,6 +72,8 @@ pub fn handle(app: &mut PdfCraftApp, ctx: &egui::Context, method: &str, params: 
         "c0.newDocument" => files::new_document(app, ctx, params),
         "c0.cancelFileDialog" => Ok(json!({"cancelled": files::cancel_picker(ctx)})),
         "c0.set" => settings::set(app, ctx, params),
+        "c0.tools" => Ok(tools::list(app)),
+        "c0.openTool" => tools::open(app, params),
         "ui.render" => render::render(app, params),
         _ => Err(format!("unknown host method {method:?}")),
     })
