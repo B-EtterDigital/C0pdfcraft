@@ -19,7 +19,7 @@ All host switches default to upstream behaviour. No engine file is modified.
 | `crates/ui-egui/src/control/requests.rs` | 1 | Dispatch c0.* and ui.render over the existing queue (moved from control.rs) |
 | `crates/ui-egui/src/dialogs.rs` | 6 | Gate About mark and delegate community footer; pass the app into upstream's new `dialog_about` (call site and signature, 2, forced by the 20261030 pull) |
 | `crates/ui-egui/src/dialogs/palette.rs` | 3 | Filter community commands (moved from palette.rs) |
-| `crates/ui-egui/src/editing/save.rs` | 1 | Select browser download MIME by file extension (moved from editing.rs) |
+| `crates/ui-egui/src/editing/save.rs` | 1 | Select browser download MIME by file extension (moved from editing.rs). Upstream added its own `download_mime_type` in 1be1cfa6e; ours still adds the text charsets and zip, so it stays until a test shows upstream's is enough |
 | `crates/ui-egui/src/home.rs` | 4 | Gate Home and delegate the upstream dismissible community card |
 | `crates/ui-egui/src/hotbar.rs` | 3 | Vertical width and the two vertical button lists wrap into a second column when the host asks (`c0_host::strip::{width,wrap}`); docked and floating use the hotbar's own dock |
 | `crates/ui-egui/src/lib.rs` | 3 | Register host/browser modules and transient Chrome field |
