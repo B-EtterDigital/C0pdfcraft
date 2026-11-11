@@ -35,9 +35,9 @@ Total: 75
 The tool list and opening (`c0.tools`, `c0.openTool`, `inspect.tool`) live in the fork-owned
 `crates/ui-egui/src/c0_host/tools.rs` and add no upstream lines; the total is unchanged.
 
-Ratchet: 65 (2026-11-09: upstream now carries serde_json; the quick-bar strip moved onto upstream's hotbar: canvas.rs 1 -> 3, hotbar.rs +3, bars.rs and the attribution/lock lines gone; 63 before the 20261030 pull; upstream moved the About tab into `dialog_about`, which had no app handle)
+Ratchet: 75 (2026-11-11: +10 for `ui.command` params, the minimum the upstream `Host::command` signature allows; 2026-11-09: upstream now carries serde_json; the quick-bar strip moved onto upstream's hotbar: canvas.rs 1 -> 3, hotbar.rs +3, bars.rs and the attribution/lock lines gone; 63 before the 20261030 pull; upstream moved the About tab into `dialog_about`, which had no app handle)
 
-2026-11-11: `ui.command` forwards its `params` to `c0_host::command_args` (control.rs +4, control/host.rs +2, control/requests.rs +1, control/lifecycle_tests.rs +3 for the fake hosts), so the total is 75. The ratchet stays at 65 until the owner decides whether to raise it.
+2026-11-11: `ui.command` forwards its `params` to `c0_host::command_args` (control.rs +4, control/host.rs +2, control/requests.rs +1, control/lifecycle_tests.rs +3 for the fake hosts), so the total is 75. The SOW owner raised the ratchet to 75 for it on 2026-11-11.
 
 Measured using `git diff --numstat --diff-filter=M c735fb7da552 HEAD -- . ':!c0'`.
 Whole-file trademark/CI removals add no lines. The size lane replaces three blank
