@@ -164,13 +164,12 @@ impl Host for crate::PdfCraftApp {
         })
     }
 
-    fn command(&mut self, id: &str) -> Reply {
+    fn command(&mut self, id: &str, params: &Value) -> Reply {
         let spec = pdfcraft_engine::commands::command(id).ok_or_else(|| format!("unknown command {id:?} (see ui.commands)"))?;
         if !self.command_enabled(spec) {
             return Err(format!("{id} is disabled right now"));
         }
-        self.execute(id);
-        Ok(json!({ "ran": id }))
+        crate::c0_host::command_args::run(self, id, params)
     }
 
     fn commands(&self) -> Value {

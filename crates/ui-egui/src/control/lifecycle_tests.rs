@@ -185,7 +185,7 @@ impl Host for NoopHost {
     fn state(&self) -> Value {
         json!({})
     }
-    fn command(&mut self, _id: &str) -> Reply {
+    fn command(&mut self, _id: &str, _params: &Value) -> Reply {
         Err("no commands in this test".into())
     }
     fn panel(&mut self, _reset: bool, _params: &Value) -> Reply {
@@ -226,7 +226,7 @@ impl Host for ReadinessHost {
         self.calls.borrow_mut().push("ui.state");
         json!({ "ready": self.ready })
     }
-    fn command(&mut self, _id: &str) -> Reply {
+    fn command(&mut self, _id: &str, _params: &Value) -> Reply {
         Err("no commands in this test".into())
     }
     fn panel(&mut self, _reset: bool, _params: &Value) -> Reply {
@@ -735,7 +735,7 @@ fn a_timed_out_screenshot_releases_its_slot_and_budget() {
         fn state(&self) -> Value {
             json!({})
         }
-        fn command(&mut self, _id: &str) -> Reply {
+        fn command(&mut self, _id: &str, _params: &Value) -> Reply {
             Err("no commands in this test".into())
         }
         fn panel(&mut self, _reset: bool, _params: &Value) -> Reply {

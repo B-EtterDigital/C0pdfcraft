@@ -27,7 +27,8 @@
 //! - `ui.drag {from: [x, y], to: [x, y], steps?, modifiers?, button?}`: press, move and release (drawing
 //!   comments, selecting text, moving comments). `ui.state` reports `pages_on_screen` to aim at.
 //! - `ui.type {text}`, `ui.key {key, modifiers?}`: keyboard input to the focused widget / app.
-//! - `ui.command {id}`: run a registry command (as the menu would). `ui.commands` lists them.
+//! - `ui.command {id, params?}`: run a registry command (as the menu would). `params` are its arguments
+//!   (`page.rotate` takes `degrees`); a command that takes none refuses them. `ui.commands` lists them.
 //! - `ui.set {key: "show_page_edge_shadows", value: "true"|"false"}` controls page
 //!   decoration app-wide; `ui.state.show_page_edge_shadows` reports the saved preference.
 //! - `ui.set {key, value}`: view options (`--page`, `--zoom`, …), plus persistent preferences.
@@ -234,8 +235,8 @@ pub(crate) trait Host {
     }
     /// Return the UI-state snapshot reported by `ui.state`.
     fn state(&self) -> Value;
-    /// Run one registered command by id and return its reply.
-    fn command(&mut self, id: &str) -> Reply;
+    /// Run one registered command by id with the request's `params` (`null` when it sent none) and return its reply.
+    fn command(&mut self, id: &str, params: &Value) -> Reply;
     /// Apply or reset the side panel layout from a control request.
     fn panel(&mut self, reset: bool, params: &Value) -> Reply;
     /// List the commands available to the control channel.

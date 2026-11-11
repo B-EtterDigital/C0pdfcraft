@@ -14,27 +14,30 @@ All host switches default to upstream behaviour. No engine file is modified.
 | `crates/ui-egui/src/canvas.rs` | 3 | Draw upstream's hotbar only when the host's toolbar switch is on (`c0_host::strip::sync`) |
 | `crates/ui-egui/src/chrome.rs` | 5 | Gate the Discord button |
 | `crates/ui-egui/src/commands.rs` | 3 | Refuse community commands when links are hidden |
-| `crates/ui-egui/src/control.rs` | 3 | Default host-extension method for upstream test hosts |
-| `crates/ui-egui/src/control/host.rs` | 3 | Forward host requests to c0_host (moved from control.rs) |
-| `crates/ui-egui/src/control/requests.rs` | 1 | Dispatch c0.* and ui.render over the existing queue (moved from control.rs) |
+| `crates/ui-egui/src/control.rs` | 7 | Default host-extension method for upstream test hosts; `Host::command` takes the request's params (`ui.command` arguments, 2) |
+| `crates/ui-egui/src/control/host.rs` | 5 | Forward host requests to c0_host (moved from control.rs); `command` hands its params to `c0_host::command_args` (2) |
+| `crates/ui-egui/src/control/requests.rs` | 2 | Dispatch c0.* and ui.render over the existing queue (moved from control.rs); `ui.command` forwards `params` (1) |
 | `crates/ui-egui/src/dialogs.rs` | 6 | Gate About mark and delegate community footer; pass the app into upstream's new `dialog_about` (call site and signature, 2, forced by the 20261030 pull) |
 | `crates/ui-egui/src/dialogs/palette.rs` | 3 | Filter community commands (moved from palette.rs) |
 | `crates/ui-egui/src/editing/save.rs` | 1 | Select browser download MIME by file extension (moved from editing.rs) |
 | `crates/ui-egui/src/home.rs` | 4 | Gate Home and delegate the upstream dismissible community card |
 | `crates/ui-egui/src/hotbar.rs` | 3 | Vertical width and the two vertical button lists wrap into a second column when the host asks (`c0_host::strip::{width,wrap}`); docked and floating use the hotbar's own dock |
 | `crates/ui-egui/src/lib.rs` | 3 | Register host/browser modules and transient Chrome field |
+| `crates/ui-egui/src/control/lifecycle_tests.rs` | 3 | Upstream's three fake hosts take the `ui.command` params (signature follows `Host::command`) |
 | `crates/ui-egui/src/menus.rs` | 1 | Filter community menu rows in the new craft-menu builder (moved from commands.rs) |
 | `crates/ui-egui/src/panels/side_panels.rs` | 2 | Project visible panes and gate rail without changing saved widths/open states (replaces docking.rs and Read-mode gate) |
 | `crates/ui-egui/src/theme.rs` | 2 | Register override module and resolve tokens |
 | `crates/ui-egui/src/workflows/combine_ui/parts.rs` | 1 | Browser-safe relative-date clock (moved from deleted combine_ui.rs) |
 | `crates/ui-egui/src/widgets.rs` | 1 | Re-export fork-owned empty layout slots instead of embedding trademark placeholders |
 
-Total: 65
+Total: 75
 
 The tool list and opening (`c0.tools`, `c0.openTool`, `inspect.tool`) live in the fork-owned
 `crates/ui-egui/src/c0_host/tools.rs` and add no upstream lines; the total is unchanged.
 
 Ratchet: 65 (2026-11-09: upstream now carries serde_json; the quick-bar strip moved onto upstream's hotbar: canvas.rs 1 -> 3, hotbar.rs +3, bars.rs and the attribution/lock lines gone; 63 before the 20261030 pull; upstream moved the About tab into `dialog_about`, which had no app handle)
+
+2026-11-11: `ui.command` forwards its `params` to `c0_host::command_args` (control.rs +4, control/host.rs +2, control/requests.rs +1, control/lifecycle_tests.rs +3 for the fake hosts), so the total is 75. The ratchet stays at 65 until the owner decides whether to raise it.
 
 Measured using `git diff --numstat --diff-filter=M c735fb7da552 HEAD -- . ':!c0'`.
 Whole-file trademark/CI removals add no lines. The size lane replaces three blank

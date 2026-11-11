@@ -14,6 +14,20 @@ fn native_feature_parses_and_bounds_requests() {
 }
 
 #[test]
+fn ui_command_params_reach_the_host_unchanged() {
+    // The page's `request("ui.command", {id, params})` keeps the params the command reads (page.rotate's degrees).
+    let (method, params) = parse(r#"{"method":"ui.command","params":{"id":"page.rotate","params":{"degrees":180}}}"#).unwrap();
+    assert_eq!(method, "ui.command");
+    assert_eq!(params, json!({"id":"page.rotate","params":{"degrees":180}}));
+    let (_, bare) = parse(r#"{"method":"ui.command","params":{"id":"page.rotate"}}"#).unwrap();
+    assert_eq!(bare, json!({"id":"page.rotate"}), "no params stays absent for the host");
+    assert!(
+        parse(r#"{"method":"ui.command","params":{"id":"page.rotate","params":"180"}}"#).is_ok(),
+        "the host refuses a string, the bridge does not guess"
+    );
+}
+
+#[test]
 fn envelopes_and_read_policy_compile_on_native() {
     assert_eq!(serde_json::from_str::<Value>(&encode(Ok(json!({"a":1})))).unwrap(), json!({"ok":true,"result":{"a":1}}));
     assert_eq!(serde_json::from_str::<Value>(&encode(Err("bad".into()))).unwrap(), json!({"ok":false,"error":"bad"}));

@@ -1,6 +1,7 @@
 //! C0VIBE host policy and requests. Defaults retain the standalone interface.
 
 pub mod brand;
+pub(crate) mod command_args;
 pub(crate) mod community;
 mod dock;
 pub mod files;

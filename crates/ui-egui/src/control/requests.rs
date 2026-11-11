@@ -19,7 +19,7 @@ impl Control {
             "ui.commands" => Ok(Handled::Now(Ok(host.commands()))),
             "ui.panel" | "ui.dock.reset" => Ok(Handled::Now(host.panel(method == "ui.dock.reset", p))),
             "ui.command" if str_param("id")? == "ui.panel" => Ok(Handled::Now(host.panel(false, p.get("params").unwrap_or(p)))),
-            "ui.command" => Ok(Handled::Now(host.command(str_param("id")?))),
+            "ui.command" => Ok(Handled::Now(host.command(str_param("id")?, p.get("params").unwrap_or(&Value::Null)))),
             "ui.set" => {
                 let value = match p.get("value") {
                     Some(Value::String(s)) => s.clone(),
