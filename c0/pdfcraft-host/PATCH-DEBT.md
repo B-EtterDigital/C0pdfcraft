@@ -1,6 +1,7 @@
 # PdfCraft upstream patch debt
 
-The pinned upstream is `5af102765222c8220df0f9eaa27bfa3bcf481ead`. The pre-merge
+The pinned upstream is `d2916dec` (storytold/pdfcraft `main`, merged 2026-11-11; it was
+`5af102765222c8220df0f9eaa27bfa3bcf481ead`). The pre-merge
 `origin/c0/main` baseline was **65 added lines**. New fork-owned files do not count.
 The table counts added lines, including replacements; deletions are described separately.
 All host switches default to upstream behaviour. No engine file is modified.
@@ -19,7 +20,7 @@ All host switches default to upstream behaviour. No engine file is modified.
 | `crates/ui-egui/src/control/requests.rs` | 2 | Dispatch c0.* and ui.render over the existing queue (moved from control.rs); `ui.command` forwards `params` (1) |
 | `crates/ui-egui/src/dialogs.rs` | 6 | Gate About mark and delegate community footer; pass the app into upstream's new `dialog_about` (call site and signature, 2, forced by the 20261030 pull) |
 | `crates/ui-egui/src/dialogs/palette.rs` | 3 | Filter community commands (moved from palette.rs) |
-| `crates/ui-egui/src/editing/save.rs` | 1 | Select browser download MIME by file extension (moved from editing.rs) |
+| `crates/ui-egui/src/editing/save.rs` | 1 | Browser download MIME: the one call site now goes through `c0_web::mime` (moved from editing.rs), which defers to upstream's `download_mime_type` table added in d2916dec and keeps only zip (2026-11-11 merge: upstream's line `download_mime_type(name)` was the same fix, so the call is ours and the table is theirs) |
 | `crates/ui-egui/src/home.rs` | 4 | Gate Home and delegate the upstream dismissible community card |
 | `crates/ui-egui/src/hotbar.rs` | 3 | Vertical width and the two vertical button lists wrap into a second column when the host asks (`c0_host::strip::{width,wrap}`); docked and floating use the hotbar's own dock |
 | `crates/ui-egui/src/lib.rs` | 3 | Register host/browser modules and transient Chrome field |
@@ -39,6 +40,8 @@ Ratchet: 75 (2026-11-11: +10 for `ui.command` params, the minimum the upstream `
 
 2026-11-11: `ui.command` forwards its `params` to `c0_host::command_args` (control.rs +4, control/host.rs +2, control/requests.rs +1, control/lifecycle_tests.rs +3 for the fake hosts), so the total is 75. The SOW owner raised the ratchet to 75 for it on 2026-11-11.
 
+2026-11-11, merge of upstream `d2916dec` into `c0/args-20261111` (`c0/merge-20261111`): the four conflicted files kept every hook and moved none. Each row above is unchanged: the per-file added-line counts were measured before the merge against upstream `bfed7bba` and after it against `d2916dec`, and both give 75. The total and the Ratchet stay 75. The save.rs row's reason changed (see the table). The per-file counts come from `git diff --numstat <upstream> -- <file>` on the listed files, not from the whole-repository command quoted below, which reports every changed file in `vendor/` and `xtask/` as well.
+
 Measured using `git diff --numstat --diff-filter=M c735fb7da552 HEAD -- . ':!c0'`.
 Whole-file trademark/CI removals add no lines. The size lane replaces three blank
 SVG placeholders with one widget re-export; the empty layout implementations live
@@ -50,8 +53,10 @@ of 63 omitted the existing one-line `Cargo.lock` dependency entry; the corrected
 starting total was 64, before this lane reduced it to 63.
 
 Deleted upstream blocks in `home.rs` and `dialogs.rs` live in `c0_host/community.rs`;
-default rendering includes upstream's new close button. The browser clock and MIME
-corrections remain in `c0_web.rs` / `c0_clock.rs` and are suitable upstream as is.
+default rendering includes upstream's new close button. The browser clock correction
+remains in `c0_web.rs` / `c0_clock.rs` and is suitable upstream as is. The MIME correction
+is upstream's since d2916dec (`download_mime_type`); `c0_web::mime` keeps only zip, which
+that table does not list.
 All other entries are fork-specific host policy/API and have not been offered upstream.
 
 ## Retired paths and previously missing conflicts

@@ -351,10 +351,12 @@ impl Stream {
     }
 
     /// Decoded data, tolerating truncated or corrupt encodings the way viewers do (the data
-    /// decoded before the damage is returned). Streams with image codecs fail with
+    /// decoded before the damage is returned). Decoding past
+    /// [`crate::budget::MAX_PAGE_DECODED`] (256 MiB), the most the renderer reads from one
+    /// stream, is an error. Streams with image codecs fail with
     /// `CosError::Filter` (keep them encoded). Use `decoded_strict` to detect damage.
     pub fn decoded(&self) -> Result<Vec<u8>, CosError> {
-        self.decoded_within(MAX_DECODED)
+        self.decoded_within(crate::budget::MAX_PAGE_DECODED)
     }
 
     /// Like [`Stream::decoded`], for a stream whose decoded size has a tighter bound than
@@ -382,12 +384,40 @@ impl Stream {
         self.decode_chain(max, decode).map(|(v, spent)| (v, damaged, spent))
     }
 
+    /// [`Stream::decoded_within_counted`] with every filter stage also held to `each`, as
+    /// [`Stream::decoded_within`] holds it, while `max` bounds the stages together
+    /// ([`pdfcraft_filters::decode_tolerant_counted_each`]). Without filters the data is held to
+    /// both.
+    pub(crate) fn decoded_within_each_counted(
+        &self,
+        each: usize,
+        max: usize,
+    ) -> Result<(Vec<u8>, bool, usize), (pdfcraft_filters::FilterError, usize)> {
+        let mut damaged = false;
+        let decode = |chain: &[(Filter, Params)], data: &[u8], max| {
+            pdfcraft_filters::decode_tolerant_counted_each(chain, data, each.min(MAX_DECODED), max).map(|(v, partial, spent)| {
+                damaged = partial;
+                (v, spent)
+            })
+        };
+        let max = if self.readable_filters().is_ok_and(|chain| chain.is_empty()) { max.min(each) } else { max };
+        self.decode_chain(max, decode).map(|(v, spent)| (v, damaged, spent))
+    }
+
     /// [`Stream::decoded_within`] spending from `work`, what an operation may still do across a
     /// document's images ([`pdfcraft_filters::decode_tolerant_within`]).
     pub(crate) fn decoded_spending(&self, max: usize, work: &mut u64) -> Result<Vec<u8>, CosError> {
         let filter = |e: pdfcraft_filters::FilterError| CosError::Filter(e.to_string());
         let chain = self.readable_filters().map_err(filter)?;
         pdfcraft_filters::decode_tolerant_within(&chain, &self.raw, max.min(MAX_DECODED), work).map_err(filter)
+    }
+
+    /// [`Stream::decoded_spending`] for the samples of an image `rows` high (its `/Height`):
+    /// [`pdfcraft_filters::decode_image_tolerant_within`].
+    pub(crate) fn decoded_image_rows_spending(&self, max: usize, rows: u32, work: &mut u64) -> Result<Vec<u8>, CosError> {
+        let filter = |e: pdfcraft_filters::FilterError| CosError::Filter(e.to_string());
+        let chain = self.readable_filters().map_err(filter)?;
+        pdfcraft_filters::decode_image_tolerant_within(&chain, &self.raw, max.min(MAX_DECODED), rows, work).map_err(filter)
     }
 
     /// The stream decoded through its filters by `decode`, or copied when it has none, within
@@ -717,6 +747,13 @@ mod tests {
     }
 
     #[test]
+    fn strict_decoding_is_bounded_by_the_callers_remaining_allowance() {
+        let stream = Stream::flate(Dict::new(), &vec![0u8; 1 << 20]);
+        assert!(matches!(stream.decoded_strict_within(1000), Err(CosError::Filter(_))));
+        assert_eq!(stream.decoded_strict_within(1 << 20).map(|v| v.len()).ok(), Some(1 << 20));
+    }
+
+    #[test]
     fn empty_filter_arrays_refuse_decoding_past_a_caller_limit() {
         let mut dict = Dict::new();
         dict.set(b"Filter".to_vec(), Object::Array(Vec::new()));
@@ -770,6 +807,13 @@ mod tests {
         assert!(matches!(&result, Err(CosError::Filter(detail)) if detail.contains("exceeds the limit of 0 bytes")), "{result:?}");
         assert_eq!(stream.decoded_within(1).unwrap(), b"A");
         assert_eq!(stream.decoded_strict().unwrap(), b"A");
+    }
+
+    #[test]
+    fn decoded_stops_at_renderer_cap_of_256_mib() {
+        let data = vec![0u8; (256 << 20) + 1];
+        let stream = Stream::flate(Dict::new(), &data);
+        assert!(matches!(stream.decoded(), Err(CosError::Filter(_))));
     }
 
     #[test]

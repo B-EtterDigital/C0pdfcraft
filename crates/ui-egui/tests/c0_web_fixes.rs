@@ -1,18 +1,17 @@
 #[path = "../src/c0_web.rs"]
 mod browser;
 
+// Stands in for upstream's `download_mime_type`, which the real build passes in; the table itself is
+// tested against the crate in tests/it/download_mime.rs.
+fn upstream(_name: &str) -> &'static str {
+    "upstream/type"
+}
+
 #[test]
-fn exported_files_use_their_own_mime_type() {
-    for (name, mime) in [
-        ("report.PDF", "application/pdf"),
-        ("page.png", "image/png"),
-        ("data.csv", "text/csv;charset=utf-8"),
-        ("reply.xfdf", "application/xml"),
-        ("archive.zip", "application/zip"),
-        ("unknown", "application/octet-stream"),
-    ] {
-        assert_eq!(browser::mime(name), mime);
-    }
+fn zip_downloads_as_zip_and_other_names_follow_upstream() {
+    assert_eq!(browser::mime("archive.ZIP", upstream), "application/zip");
+    assert_eq!(browser::mime("report.PDF", upstream), "upstream/type");
+    assert_eq!(browser::mime("unknown", upstream), "upstream/type");
 }
 
 #[test]

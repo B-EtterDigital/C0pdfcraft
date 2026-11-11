@@ -13,23 +13,13 @@ pub fn session() -> pdfcraft_engine::Session {
     session
 }
 
+/// The type a browser download of `name` is offered as. Zip is the one type this fork adds, as
+/// upstream's table does not list it; every other name gets `upstream`'s answer (upstream's
+/// `download_mime_type`, passed in so this module needs no crate root).
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
-pub fn mime(name: &str) -> &'static str {
+pub fn mime(name: &str, upstream: fn(&str) -> &'static str) -> &'static str {
     match name.rsplit('.').next().unwrap_or("").to_ascii_lowercase().as_str() {
-        "pdf" => "application/pdf",
-        "png" => "image/png",
-        "jpg" | "jpeg" => "image/jpeg",
-        "svg" => "image/svg+xml",
-        "txt" => "text/plain;charset=utf-8",
-        "csv" => "text/csv;charset=utf-8",
-        "html" | "htm" => "text/html;charset=utf-8",
-        "xml" | "xfdf" => "application/xml",
-        "fdf" => "application/vnd.fdf",
-        "json" => "application/json",
         "zip" => "application/zip",
-        "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "pptx" => "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        _ => "application/octet-stream",
+        _ => upstream(name),
     }
 }
