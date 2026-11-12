@@ -1,6 +1,7 @@
 # PdfCraft upstream patch debt
 
-The pinned upstream is `d2916dec` (storytold/pdfcraft `main`, merged 2026-11-11; it was
+The merged upstream is `1d2af990` (storytold/pdfcraft `main`, merged 2026-11-12 by the daily
+sync, candidate `21c6453e`; before that `d2916dec`, merged 2026-11-11, and
 `5af102765222c8220df0f9eaa27bfa3bcf481ead`). The pre-merge
 `origin/c0/main` baseline was **65 added lines**. New fork-owned files do not count.
 The table counts added lines, including replacements; deletions are described separately.
@@ -39,6 +40,15 @@ The tool list and opening (`c0.tools`, `c0.openTool`, `inspect.tool`) live in th
 Ratchet: 75 (2026-11-11: +10 for `ui.command` params, the minimum the upstream `Host::command` signature allows; 2026-11-09: upstream now carries serde_json; the quick-bar strip moved onto upstream's hotbar: canvas.rs 1 -> 3, hotbar.rs +3, bars.rs and the attribution/lock lines gone; 63 before the 20261030 pull; upstream moved the About tab into `dialog_about`, which had no app handle)
 
 2026-11-11: `ui.command` forwards its `params` to `c0_host::command_args` (control.rs +4, control/host.rs +2, control/requests.rs +1, control/lifecycle_tests.rs +3 for the fake hosts), so the total is 75. The SOW owner raised the ratchet to 75 for it on 2026-11-11.
+
+2026-11-12, merge of upstream `1d2af990` (sync candidate `21c6453e`, fix branch `c0/fix-20261112`):
+no hook moved and every row above is unchanged (`git diff --numstat 1d2af990 HEAD` on the listed
+files gives the same 75 as against `d2916dec` before the merge). The web page build broke only in
+the fork-owned `c0_host/files.rs`, which adds no upstream lines: upstream removed the
+`create_ui::CONVERTIBLE` re-export (3a117c3c, Office documents through LibreOffice), so the page's
+Open picker now uses upstream's `PdfCraftApp::open_filters()`; and on the web a prepared document
+now holds its script realm (boa, f6c59c0b), which is not `Send`, so a replacement waiting for
+Save Changes keeps the file's bytes in egui's temp storage and prepares them again on the answer.
 
 2026-11-11, merge of upstream `d2916dec` into `c0/args-20261111` (`c0/merge-20261111`): the four conflicted files kept every hook and moved none. Each row above is unchanged: the per-file added-line counts were measured before the merge against upstream `bfed7bba` and after it against `d2916dec`, and both give 75. The total and the Ratchet stay 75. The save.rs row's reason changed (see the table). The per-file counts come from `git diff --numstat <upstream> -- <file>` on the listed files, not from the whole-repository command quoted below, which reports every changed file in `vendor/` and `xtask/` as well.
 

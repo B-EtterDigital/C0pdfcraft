@@ -4,22 +4,48 @@ use crate::PdfCraftApp;
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use serde_json::{Value, json};
 use std::sync::{
-    Arc, Mutex,
+    Arc,
     atomic::{AtomicBool, Ordering},
 };
 
 struct Prepared {
     name: String,
-    size: usize,
+    /// The PDF bytes `document` was prepared from (converted ones for an image or text file).
+    bytes: Arc<Vec<u8>>,
     document: pdfcraft_engine::PreparedDocument,
     conversion_source: Option<Arc<Vec<u8>>>,
+}
+
+/// A replacement's file while it waits for Save Changes: what [`Prepared`] was made from,
+/// without the prepared document. egui's temp storage needs `Send + Sync`, and on the web a
+/// prepared document holds its script realm (boa), which is neither; [`poll`] prepares the bytes
+/// again when the answer comes.
+#[derive(Clone)]
+struct Staged {
+    name: String,
+    bytes: Arc<Vec<u8>>,
+    conversion_source: Option<Arc<Vec<u8>>>,
+}
+
+impl Prepared {
+    fn staged(&self) -> Staged {
+        Staged { name: self.name.clone(), bytes: self.bytes.clone(), conversion_source: self.conversion_source.clone() }
+    }
+}
+
+impl Staged {
+    /// Prepare the file again, as `open` did before it asked about the open document.
+    fn prepare(self, app: &PdfCraftApp) -> Result<Prepared, String> {
+        let document = app.session.prepare_open(self.name.as_str(), None, self.bytes.clone(), None).map_err(|e| e.to_string())?;
+        Ok(Prepared { name: self.name, bytes: self.bytes, document, conversion_source: self.conversion_source })
+    }
 }
 
 #[derive(Clone)]
 struct Replacement {
     old: Option<pdfcraft_engine::DocId>,
     // None means upstream's blank-document operation.
-    prepared: Arc<Mutex<Option<Prepared>>>,
+    staged: Option<Staged>,
 }
 
 fn replacement_id() -> egui::Id {
@@ -80,7 +106,7 @@ pub(super) fn open(app: &mut PdfCraftApp, ctx: &egui::Context, params: &Value) -
     let document = app.session.prepare_open(name, None, bytes.clone(), None).map_err(|e| e.to_string())?;
     // Preparation succeeds before we ask about or close the existing document. Encrypted
     // documents without an empty password fail here and remain available through normal Open.
-    replace(app, ctx, Some(Prepared { name: name.to_owned(), size: bytes.len(), document, conversion_source }))
+    replace(app, ctx, Some(Prepared { name: name.to_owned(), bytes, document, conversion_source }))
 }
 
 pub(super) fn new_document(app: &mut PdfCraftApp, ctx: &egui::Context, params: &Value) -> Result<Value, String> {
@@ -102,29 +128,28 @@ fn replace(app: &mut PdfCraftApp, ctx: &egui::Context, prepared: Option<Prepared
     }
     cancel_picker(ctx);
     let old = app.active_ids().map(|(_, id)| id);
-    let replacement = Replacement { old, prepared: Arc::new(Mutex::new(prepared)) };
     if let Some(index) = app.active {
         app.request_close_tab(index);
         if app.close_request.is_some() {
+            let replacement = Replacement { old, staged: prepared.as_ref().map(Prepared::staged) };
             ctx.data_mut(|d| d.insert_temp(replacement_id(), replacement));
             ctx.request_repaint();
             return Ok(json!({"pending": true, "needsConfirmation": true}));
         }
     }
-    finish(app, replacement)?;
+    finish(app, prepared)?;
     ctx.request_repaint();
     Ok(json!({"opened": true, "pending": false}))
 }
 
-fn finish(app: &mut PdfCraftApp, replacement: Replacement) -> Result<(), String> {
-    let prepared = replacement.prepared.lock().map_err(|_| "replacement lock is unavailable")?.take();
+fn finish(app: &mut PdfCraftApp, prepared: Option<Prepared>) -> Result<(), String> {
     app.startup_superseded = true;
     if let Some(prepared) = prepared {
         if let Some(bytes) = prepared.conversion_source {
             // Upstream's conversion path names the resulting PDF and marks it unsaved.
             app.open_bytes(&prepared.name, None, bytes.as_ref().clone())?;
         } else {
-            app.finish_open(&prepared.name, None, prepared.size, prepared.document, true)?;
+            app.finish_open(&prepared.name, None, prepared.bytes.len(), prepared.document, true)?;
         }
     } else {
         let before = app.views.len();
@@ -149,7 +174,8 @@ pub fn poll(app: &mut PdfCraftApp, ctx: &egui::Context) {
     }
     ctx.data_mut(|d| d.remove::<Replacement>(replacement_id()));
     if replacement.old.is_none_or(|id| app.session.get(id).is_none()) {
-        if let Err(error) = finish(app, replacement) {
+        let prepared = replacement.staged.map(|staged| staged.prepare(app)).transpose();
+        if let Err(error) = prepared.and_then(|prepared| finish(app, prepared)) {
             app.notify_fmt("Couldn't open document: {e}", &[("e", &error)]);
         }
         ctx.request_repaint();
@@ -165,6 +191,7 @@ pub fn page_picker(app: &mut PdfCraftApp) -> bool {
     }
     #[cfg(target_arch = "wasm32")]
     {
+        use crate::file_filter::AddFilterAnyCase as _;
         let Some(ctx) = app.ctx.clone().filter(|ctx| ctx.data(|d| d.get_temp::<bool>(enabled_id())).unwrap_or(false)) else { return false };
         cancel_picker(&ctx);
         let flag = Arc::new(AtomicBool::new(true));
@@ -172,12 +199,12 @@ pub fn page_picker(app: &mut PdfCraftApp) -> bool {
         let inbox = app.inbox.clone();
         let failed = app.failed_inbox.clone();
         app.startup_superseded = true;
+        // Upstream's File ▸ Open types (`open_filters`), so the page offers what Open accepts.
+        let dialog = PdfCraftApp::open_filters()
+            .into_iter()
+            .fold(rfd::AsyncFileDialog::new(), |dialog, (name, extensions)| dialog.add_filter_any_case(name, &extensions));
         wasm_bindgen_futures::spawn_local(async move {
-            let selected = rfd::AsyncFileDialog::new()
-                .add_filter("PDF", &["pdf"])
-                .add_filter("Images and text", &crate::create_ui::CONVERTIBLE)
-                .pick_file()
-                .await;
+            let selected = dialog.pick_file().await;
             if let Some(file) = selected {
                 // Check before and after reading; cancelled late results never enter the inbox.
                 if flag.load(Ordering::Relaxed) {

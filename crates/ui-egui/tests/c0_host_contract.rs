@@ -160,6 +160,40 @@ fn replacement_uses_existing_save_changes_cancel_discard_and_save() {
 }
 
 #[test]
+fn open_file_waiting_for_save_changes_prepares_its_bytes_again() {
+    // The wait keeps the file's bytes, not the prepared document, which on the web holds a
+    // script realm egui's temp storage cannot keep (not Send).
+    for (name, opened, pages) in [("next.pdf", "next.pdf", 2), ("notes.txt", "notes.pdf", 1)] {
+        let (mut h, client) = harness(1);
+        h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark {
+            parent: vec![],
+            index: 0,
+            title: "Keep".into(),
+            page: 0,
+            left: None,
+            top: None,
+        });
+        let id = h.state().views[0].id;
+        let bytes = match name {
+            "next.pdf" => h.state().session.create_blank(200.0, 300.0, 2).unwrap().as_ref().clone(),
+            _ => b"Original synthetic text".to_vec(),
+        };
+        let result = call(&mut h, &client, "c0.openFile", json!({"name": name, "bytes": STANDARD.encode(&bytes)})).unwrap();
+        assert_eq!(result["pending"], true, "{name}");
+        assert!(c0_host::files::replacement_pending(&h.ctx));
+        // Save Changes appears on the next frame.
+        h.run_steps(2);
+        h.get_by_label("Don't save").click();
+        h.run_steps(3);
+        assert!(!c0_host::files::replacement_pending(&h.ctx));
+        assert!(h.state().session.get(id).is_none(), "{name}");
+        let state = call(&mut h, &client, "c0.inspect", json!({})).unwrap();
+        assert_eq!(state["name"], opened);
+        assert_eq!(state["pageCount"], pages);
+    }
+}
+
+#[test]
 fn panel_defaults_settings_validation_and_no_persistence() {
     let (mut h, client) = harness(0);
     let defaults = serde_json::to_value(h.state().chrome).unwrap();
